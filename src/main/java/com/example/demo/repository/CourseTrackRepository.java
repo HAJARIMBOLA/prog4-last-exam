@@ -1,0 +1,11 @@
+package com.example.demo.repository;
+
+import com.example.demo.domain.CourseTrack;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface CourseTrackRepository extends JpaRepository<CourseTrack, UUID> {
+
+  List<CourseTrack> findByCourseId(UUID courseId);
+}
