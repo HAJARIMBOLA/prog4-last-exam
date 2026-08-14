@@ -8,6 +8,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.demo.model.LoginRequest;
 import com.example.demo.model.LoginResponse;
+import com.example.demo.security.CustomUserDetailsService;
+import com.example.demo.security.JwtService;
 import com.example.demo.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -26,6 +28,10 @@ class AuthControllerTest {
   @Autowired private MockMvc mockMvc;
 
   @MockBean private AuthService authService;
+
+  @MockBean private JwtService jwtService;
+
+  @MockBean private CustomUserDetailsService userDetailsService;
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
