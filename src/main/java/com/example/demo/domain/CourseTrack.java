@@ -34,4 +34,8 @@ public class CourseTrack {
 
   @Enumerated(EnumType.STRING)
   private Track track;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "semester_id", nullable = false)
+  private Semester semester;
 }

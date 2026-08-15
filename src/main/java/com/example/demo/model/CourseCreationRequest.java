@@ -13,5 +13,6 @@ public record CourseCreationRequest(
     @NotBlank String title,
     @Positive int credits,
     @NotNull UUID academicYearId,
+    @NotNull UUID semesterId,
     @NotEmpty List<Track> tracks,
     @NotEmpty List<UUID> teacherIds) {}

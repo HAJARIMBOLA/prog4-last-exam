@@ -9,6 +9,9 @@ public class CourseTrackMapper {
 
   public static CourseTrackDTO toDTO(CourseTrack courseTrack) {
     return new CourseTrackDTO(
-        courseTrack.getId(), courseTrack.getCourse().getId(), courseTrack.getTrack());
+        courseTrack.getId(),
+        courseTrack.getCourse().getId(),
+        courseTrack.getTrack(),
+        courseTrack.getSemester().getId());
   }
 }
