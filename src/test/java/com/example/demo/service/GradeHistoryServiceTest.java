@@ -78,6 +78,25 @@ class GradeHistoryServiceTest {
     assertThat(history).extracting("value").containsExactly(8.0, 12.0, 14.0);
   }
 
+  @Test
+  void getGradesForStudentReturnsOnlyThatStudentsGrades() {
+    var studentAId = UUID.randomUUID();
+    var studentA = studentWith(studentAId);
+    var teacher = teacherWith(UUID.randomUUID());
+    var exam = examWith(UUID.randomUUID());
+
+    var studentAGrade =
+        new GradeHistory(UUID.randomUUID(), studentA, exam, 16.0, Instant.now(), teacher);
+
+    when(gradeHistoryRepository.findByStudentId(studentAId)).thenReturn(List.of(studentAGrade));
+
+    var service = new GradeHistoryService(gradeHistoryRepository);
+    var grades = service.getGradesForStudent(studentAId);
+
+    assertThat(grades).hasSize(1);
+    assertThat(grades.get(0).studentId()).isEqualTo(studentAId);
+  }
+
   private User studentWith(UUID id) {
     return new User(id, "s@hei.school", "hash", Role.STUDENT, "STD001", "Jane", "Doe");
   }

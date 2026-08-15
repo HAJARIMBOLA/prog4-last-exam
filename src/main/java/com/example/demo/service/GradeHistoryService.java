@@ -30,4 +30,10 @@ public class GradeHistoryService {
         .map(GradeHistoryMapper::toDTO)
         .toList();
   }
+
+  public List<GradeHistoryDTO> getGradesForStudent(UUID studentId) {
+    return gradeHistoryRepository.findByStudentId(studentId).stream()
+        .map(GradeHistoryMapper::toDTO)
+        .toList();
+  }
 }
