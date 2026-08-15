@@ -21,6 +21,7 @@ class CourseCreationRequestTest {
             "Algorithms",
             4,
             UUID.randomUUID(),
+            UUID.randomUUID(),
             List.of(Track.COMMON_CORE),
             List.of(UUID.randomUUID()));
     assertThat(validator.validate(request)).isEmpty();
@@ -34,6 +35,7 @@ class CourseCreationRequestTest {
             "Algorithms",
             4,
             UUID.randomUUID(),
+            UUID.randomUUID(),
             List.of(Track.EL, Track.TN),
             List.of(UUID.randomUUID(), UUID.randomUUID()));
     assertThat(validator.validate(request)).isEmpty();
@@ -43,7 +45,13 @@ class CourseCreationRequestTest {
   void emptyTeacherListIsRejected() {
     var request =
         new CourseCreationRequest(
-            "ALG101", "Algorithms", 4, UUID.randomUUID(), List.of(Track.EL), List.of());
+            "ALG101",
+            "Algorithms",
+            4,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            List.of(Track.EL),
+            List.of());
     assertThat(validator.validate(request)).isNotEmpty();
   }
 
@@ -51,7 +59,13 @@ class CourseCreationRequestTest {
   void emptyTrackListIsRejected() {
     var request =
         new CourseCreationRequest(
-            "ALG101", "Algorithms", 4, UUID.randomUUID(), List.of(), List.of(UUID.randomUUID()));
+            "ALG101",
+            "Algorithms",
+            4,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            List.of(),
+            List.of(UUID.randomUUID()));
     assertThat(validator.validate(request)).isNotEmpty();
   }
 }

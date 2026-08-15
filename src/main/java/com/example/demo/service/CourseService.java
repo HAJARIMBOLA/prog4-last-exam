@@ -9,6 +9,7 @@ import com.example.demo.repository.AcademicYearRepository;
 import com.example.demo.repository.CourseAssignmentRepository;
 import com.example.demo.repository.CourseRepository;
 import com.example.demo.repository.CourseTrackRepository;
+import com.example.demo.repository.SemesterRepository;
 import com.example.demo.repository.UserRepository;
 import java.util.List;
 import java.util.Optional;
@@ -25,18 +26,29 @@ public class CourseService {
   private final CourseAssignmentRepository courseAssignmentRepository;
   private final UserRepository userRepository;
   private final AcademicYearRepository academicYearRepository;
+  private final SemesterRepository semesterRepository;
+  private final CreditStructureValidationService creditStructureValidationService;
 
   public CourseDTO createCourse(CourseCreationRequest request) {
     var course = CourseMapper.toEntity(request);
     var savedCourse = courseRepository.save(course);
 
+    var semester =
+        semesterRepository
+            .findById(request.semesterId())
+            .orElseThrow(
+                () -> new IllegalArgumentException("Semester not found: " + request.semesterId()));
+
     request
         .tracks()
         .forEach(
             track -> {
+              creditStructureValidationService.assertAddingCourseWithinSemesterCap(
+                  track, semester.getId(), savedCourse.getCredits());
               var courseTrack = new CourseTrack();
               courseTrack.setCourse(savedCourse);
               courseTrack.setTrack(track);
+              courseTrack.setSemester(semester);
               courseTrackRepository.save(courseTrack);
             });
 
