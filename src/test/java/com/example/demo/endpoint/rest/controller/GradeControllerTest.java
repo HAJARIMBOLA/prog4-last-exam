@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.demo.domain.Role;
+import com.example.demo.domain.User;
 import com.example.demo.model.GradeHistoryDTO;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.CustomUserDetailsService;
@@ -16,6 +18,7 @@ import com.example.demo.service.GradeHistoryService;
 import com.example.demo.service.GradeSubmissionService;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,8 +77,10 @@ class GradeControllerTest {
 
   @Test
   @WithMockUser(username = "s@hei.school", roles = "STUDENT")
-  void getStudentGradesReturnsOnlyThatStudentsGrades() throws Exception {
+  void studentCanViewTheirOwnGrades() throws Exception {
     var studentId = UUID.randomUUID();
+    when(userRepository.findByEmail("s@hei.school"))
+        .thenReturn(Optional.of(studentWith(studentId, "s@hei.school")));
     when(gradeHistoryService.getGradesForStudent(studentId))
         .thenReturn(
             List.of(
@@ -88,5 +93,29 @@ class GradeControllerTest {
                     UUID.randomUUID())));
 
     mockMvc.perform(get("/students/{id}/grades", studentId)).andExpect(status().isOk());
+  }
+
+  @Test
+  @WithMockUser(username = "s@hei.school", roles = "STUDENT")
+  void studentCannotViewAnotherStudentsGradesEvenByTamperingTheId() throws Exception {
+    var ownId = UUID.randomUUID();
+    var otherStudentId = UUID.randomUUID();
+    when(userRepository.findByEmail("s@hei.school"))
+        .thenReturn(Optional.of(studentWith(ownId, "s@hei.school")));
+
+    mockMvc.perform(get("/students/{id}/grades", otherStudentId)).andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithMockUser(username = "t@hei.school", roles = "TEACHER")
+  void teacherCanViewAnyStudentsGrades() throws Exception {
+    var studentId = UUID.randomUUID();
+    when(gradeHistoryService.getGradesForStudent(studentId)).thenReturn(List.of());
+
+    mockMvc.perform(get("/students/{id}/grades", studentId)).andExpect(status().isOk());
+  }
+
+  private User studentWith(UUID id, String email) {
+    return new User(id, email, "hash", Role.STUDENT, "STD001", "Jane", "Doe");
   }
 }
