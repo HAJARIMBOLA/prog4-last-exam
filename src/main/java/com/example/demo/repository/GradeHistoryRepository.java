@@ -10,4 +10,6 @@ public interface GradeHistoryRepository extends JpaRepository<GradeHistory, UUID
   List<GradeHistory> findByStudentIdAndExamIdOrderByRecordedAtDesc(UUID studentId, UUID examId);
 
   List<GradeHistory> findByStudentIdAndExamIdOrderByRecordedAtAsc(UUID studentId, UUID examId);
+
+  List<GradeHistory> findByStudentId(UUID studentId);
 }
