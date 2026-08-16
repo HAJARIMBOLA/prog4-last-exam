@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Promotions</title>
+</head>
+<body>
+  <h1>Promotions</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Label</th>
+        <th>Expected graduation year</th>
+        <th>Graduates list</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="promotion : ${promotions}">
+        <td th:text="${promotion.label}"></td>
+        <td th:text="${promotion.expectedGraduationYear}"></td>
+        <td>
+          <a
+            class="download-graduates-link"
+            th:href="@{/promotions/{id}/graduates/download(id=${promotion.id},track='EL')}"
+            >Download EL graduates</a
+          >
+          <a
+            class="download-graduates-link"
+            th:href="@{/promotions/{id}/graduates/download(id=${promotion.id},track='TN')}"
+            >Download TN graduates</a
+          >
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

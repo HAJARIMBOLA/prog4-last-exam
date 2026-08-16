@@ -1,0 +1,789 @@
+openapi: 3.0.3
+info:
+  title: HEI Grades Management API
+  version: "1.0.0"
+  description: >
+    Spring Boot application on AWS Lambda + SnapStart (Poja) managing HEI students'
+    grades over a 3-year path (EL or TN track, chosen after a shared common-core
+    year 1). Stateless JWT authentication; accounts are created by an admin only.
+security:
+  - bearerAuth: []
+tags:
+  - name: auth
+  - name: users
+  - name: courses
+  - name: exams
+  - name: grades
+  - name: group-memberships
+  - name: transcripts
+  - name: promotions
+  - name: academic-years
+  - name: health
+
+paths:
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Authenticate and obtain a JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+
+  /users/me/password:
+    patch:
+      tags: [users]
+      summary: Change the authenticated user's own password
+      description: Requires the current password to be provided and verified.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '204':
+          description: Password changed
+        '401':
+          description: Current password does not match
+
+  /admin/users/{id}/reset-password:
+    post:
+      tags: [users]
+      summary: Reset a user's password (admin only)
+      description: Issues a new temporary password without needing the old one.
+      security:
+        - bearerAuth: [ADMIN]
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Temporary password issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetPasswordResponse'
+        '403':
+          description: Caller is not an admin
+
+  /admin/students:
+    post:
+      tags: [users]
+      summary: Create a student account (admin only)
+      security:
+        - bearerAuth: [ADMIN]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateStudentRequest'
+      responses:
+        '201':
+          description: Student created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreationResponse'
+        '403':
+          description: Caller is not an admin
+
+  /admin/students/{id}:
+    put:
+      tags: [users]
+      summary: Update a student account (admin only)
+      security:
+        - bearerAuth: [ADMIN]
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStudentRequest'
+      responses:
+        '200':
+          description: Student updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        '403':
+          description: Caller is not an admin
+
+  /admin/teachers:
+    post:
+      tags: [users]
+      summary: Create a teacher account (admin only)
+      security:
+        - bearerAuth: [ADMIN]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeacherRequest'
+      responses:
+        '201':
+          description: Teacher created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreationResponse'
+        '403':
+          description: Caller is not an admin
+
+  /admin/teachers/{id}:
+    put:
+      tags: [users]
+      summary: Update a teacher account (admin only)
+      security:
+        - bearerAuth: [ADMIN]
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTeacherRequest'
+      responses:
+        '200':
+          description: Teacher updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        '403':
+          description: Caller is not an admin
+
+  /courses:
+    get:
+      tags: [courses]
+      summary: List all courses
+      responses:
+        '200':
+          description: Courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseDTO'
+    post:
+      tags: [courses]
+      summary: Create a course with its track(s), semester, and teacher assignment(s)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreationRequest'
+      responses:
+        '201':
+          description: Course created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDTO'
+        '409':
+          description: Would exceed the 30-credit-per-semester cap for the track
+
+  /courses/{id}:
+    get:
+      tags: [courses]
+      summary: Get a course by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDTO'
+        '404':
+          description: Not found
+
+  /courses/{courseId}/exams:
+    post:
+      tags: [exams]
+      summary: Add an exam to a course (admin only)
+      description: >
+        Rejected if the resulting coefficient sum for the course would exceed 1.0
+        (the "course complete" rule).
+      security:
+        - bearerAuth: [ADMIN]
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamCreationRequest'
+      responses:
+        '201':
+          description: Exam created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamDTO'
+        '403':
+          description: Caller is not an admin
+        '409':
+          description: Coefficient sum would exceed 1.0
+
+  /exams/{id}/grades:
+    post:
+      tags: [grades]
+      summary: Submit a grade for a student on an exam
+      description: >
+        Only a teacher assigned to the exam's course for the current academic year
+        may grade it; enforced in the service layer (403 if not assigned).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradeSubmissionRequest'
+      responses:
+        '201':
+          description: Grade recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GradeHistoryDTO'
+        '400':
+          description: Grade value out of the 0-20 range
+        '403':
+          description: Teacher is not assigned to this course for the current year
+
+  /students/{id}/grades:
+    get:
+      tags: [grades]
+      summary: View a student's grades
+      description: >
+        A student may only view their own grades (403 otherwise); teachers and
+        admins may view any student's grades.
+      parameters:
+        - $ref: '#/components/parameters/StudentId'
+      responses:
+        '200':
+          description: Grade history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GradeHistoryDTO'
+        '403':
+          description: Student requesting another student's grades
+
+  /students/{id}/group-memberships:
+    post:
+      tags: [group-memberships]
+      summary: Change a student's group
+      description: Closes the previous membership and opens a new one from the effective date.
+      parameters:
+        - $ref: '#/components/parameters/StudentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeGroupRequest'
+      responses:
+        '201':
+          description: New membership created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMembershipDTO'
+    get:
+      tags: [group-memberships]
+      summary: Full group membership history for a student
+      parameters:
+        - $ref: '#/components/parameters/StudentId'
+      responses:
+        '200':
+          description: Membership history, chronological
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GroupMembershipDTO'
+
+  /students/{id}/transcripts/{year}:
+    post:
+      tags: [transcripts]
+      summary: Request asynchronous transcript generation
+      description: >
+        Builds and enqueues a TranscriptGenerationRequested event; the PDF is
+        generated, uploaded to S3, and emailed to the student asynchronously by a
+        Worker. Never blocks on generation. A student may only request their own
+        transcript; staff may request any.
+      parameters:
+        - $ref: '#/components/parameters/StudentId'
+        - name: year
+          in: path
+          required: true
+          description: Academic year id
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: Generation request accepted
+        '403':
+          description: Student requesting another student's transcript
+
+  /promotions:
+    get:
+      tags: [promotions]
+      summary: List all promotions
+      responses:
+        '200':
+          description: Promotions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PromotionDTO'
+
+  /promotions/{id}/graduates/download:
+    get:
+      tags: [promotions]
+      summary: Get a presigned download link for a promotion's graduates XLSX (admin/teacher only)
+      description: >
+        Generates the graduates workbook (rank, STD, last name, first name, general
+        average) for eligible graduates of the given track, uploads it to S3, and
+        returns a 15-minute presigned URL. Never emailed.
+      security:
+        - bearerAuth: [ADMIN, TEACHER]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Promotion id
+          schema:
+            type: string
+            format: uuid
+        - name: track
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Track'
+      responses:
+        '200':
+          description: Presigned download URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraduatesDownloadResponse'
+        '403':
+          description: Caller is neither admin nor teacher
+
+  /academic-years/{id}/close:
+    post:
+      tags: [academic-years]
+      summary: Close an academic year (admin only)
+      description: >
+        For every student enrolled in this academic year, in order: evaluates
+        year-repetition (failed credits and/or average < 10), then generates their
+        transcript.
+      security:
+        - bearerAuth: [ADMIN]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Academic year closed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicYearClosingResponse'
+        '403':
+          description: Caller is not an admin
+
+  /ping:
+    get:
+      tags: [health]
+      summary: Liveness check
+      security: []
+      responses:
+        '200':
+          description: pong
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
+
+  /health/bucket:
+    get:
+      tags: [health]
+      summary: File storage health check (Poja-generated)
+      security: []
+      responses:
+        '200':
+          description: Presigned URI to a round-tripped test file
+
+  /health/email:
+    get:
+      tags: [health]
+      summary: Email sending health check (Poja-generated)
+      security: []
+      parameters:
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: OK
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        JWT issued by POST /auth/login. Roles referenced in a path's `security`
+        block (ADMIN, TEACHER, STUDENT) are enforced via Spring Security
+        @PreAuthorize where noted; endpoints without a role listed only require
+        any authenticated user, with finer-grained ownership checks (e.g.
+        anti-IDOR on /students/{id}/...) done in the controller/service.
+
+  parameters:
+    UserId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    StudentId:
+      name: id
+      in: path
+      required: true
+      description: Student user id
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    Role:
+      type: string
+      enum: [STUDENT, TEACHER, ADMIN]
+
+    Track:
+      type: string
+      enum: [COMMON_CORE, EL, TN]
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+
+    ChangePasswordRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+          minLength: 8
+
+    ResetPasswordResponse:
+      type: object
+      properties:
+        temporaryPassword:
+          type: string
+
+    CreateStudentRequest:
+      type: object
+      required: [email, firstName, lastName, matriculationNumber]
+      properties:
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        matriculationNumber:
+          type: string
+          example: STD001
+
+    UpdateStudentRequest:
+      allOf:
+        - $ref: '#/components/schemas/CreateStudentRequest'
+
+    CreateTeacherRequest:
+      type: object
+      required: [email, firstName, lastName]
+      properties:
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+
+    UpdateTeacherRequest:
+      allOf:
+        - $ref: '#/components/schemas/CreateTeacherRequest'
+
+    UserDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/Role'
+        matriculationNumber:
+          type: string
+          nullable: true
+          description: Null for teachers/admins
+        firstName:
+          type: string
+        lastName:
+          type: string
+
+    UserCreationResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserDTO'
+        temporaryPassword:
+          type: string
+
+    CourseDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ref:
+          type: string
+          example: ALG101
+        title:
+          type: string
+        credits:
+          type: integer
+
+    CourseCreationRequest:
+      type: object
+      required: [ref, title, credits, academicYearId, semesterId, tracks, teacherIds]
+      properties:
+        ref:
+          type: string
+        title:
+          type: string
+        credits:
+          type: integer
+          minimum: 1
+        academicYearId:
+          type: string
+          format: uuid
+        semesterId:
+          type: string
+          format: uuid
+        tracks:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Track'
+        teacherIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uuid
+
+    ExamDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        dateExam:
+          type: string
+          format: date
+        coefficient:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+        courseId:
+          type: string
+          format: uuid
+
+    ExamCreationRequest:
+      type: object
+      required: [dateExam, coefficient]
+      properties:
+        dateExam:
+          type: string
+          format: date
+        coefficient:
+          type: number
+          format: double
+          exclusiveMinimum: true
+          minimum: 0
+          maximum: 1
+
+    GradeSubmissionRequest:
+      type: object
+      required: [studentId, value]
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        value:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 20
+
+    GradeHistoryDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        examId:
+          type: string
+          format: uuid
+        value:
+          type: number
+          format: double
+        recordedAt:
+          type: string
+          format: date-time
+        recordedById:
+          type: string
+          format: uuid
+
+    ChangeGroupRequest:
+      type: object
+      required: [groupId, effectiveDate]
+      properties:
+        groupId:
+          type: string
+          format: uuid
+        effectiveDate:
+          type: string
+          format: date
+
+    GroupMembershipDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        studentId:
+          type: string
+          format: uuid
+        groupId:
+          type: string
+          format: uuid
+        groupRef:
+          type: string
+          example: K1
+        dateStart:
+          type: string
+          format: date
+        dateEnd:
+          type: string
+          format: date
+          nullable: true
+          description: Null while the membership is still active
+
+    PromotionDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        expectedGraduationYear:
+          type: integer
+
+    GraduatesDownloadResponse:
+      type: object
+      properties:
+        downloadUrl:
+          type: string
+          format: uri
+
+    AcademicYearClosingResponse:
+      type: object
+      properties:
+        studentsProcessed:
+          type: integer
