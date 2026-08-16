@@ -1,10 +1,13 @@
 package com.example.demo.endpoint.rest.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.demo.model.PageResponseDTO;
 import com.example.demo.model.PromotionDTO;
 import com.example.demo.security.CustomUserDetailsService;
 import com.example.demo.security.JwtService;
@@ -16,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = PromotionController.class)
@@ -33,14 +37,33 @@ class PromotionControllerTest {
   @Test
   void listPromotionsReturnsPromotionDTOShape() throws Exception {
     var promotionId = UUID.randomUUID();
-    when(promotionService.listPromotions())
-        .thenReturn(List.of(new PromotionDTO(promotionId, "P2026", 2029)));
+    when(promotionService.listPromotions(any()))
+        .thenReturn(
+            new PageResponseDTO<>(
+                List.of(new PromotionDTO(promotionId, "P2026", 2029)), 0, 20, 1, 1));
 
     mockMvc
         .perform(get("/promotions"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].id").value(promotionId.toString()))
-        .andExpect(jsonPath("$[0].label").value("P2026"))
-        .andExpect(jsonPath("$[0].expectedGraduationYear").value(2029));
+        .andExpect(jsonPath("$.content[0].id").value(promotionId.toString()))
+        .andExpect(jsonPath("$.content[0].label").value("P2026"))
+        .andExpect(jsonPath("$.content[0].expectedGraduationYear").value(2029))
+        .andExpect(jsonPath("$.totalElements").value(1));
+  }
+
+  @Test
+  void listPromotionsForwardsThePageAndSizeQueryParameters() throws Exception {
+    when(promotionService.listPromotions(any()))
+        .thenReturn(new PageResponseDTO<>(List.of(), 1, 10, 25, 3));
+
+    mockMvc
+        .perform(get("/promotions").param("page", "1").param("size", "10"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.page").value(1))
+        .andExpect(jsonPath("$.size").value(10))
+        .andExpect(jsonPath("$.totalElements").value(25))
+        .andExpect(jsonPath("$.totalPages").value(3));
+
+    verify(promotionService).listPromotions(PageRequest.of(1, 10));
   }
 }

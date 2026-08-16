@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.domain.Exam;
 import com.example.demo.exception.InvalidCoefficientSumException;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.mapper.ExamMapper;
 import com.example.demo.model.ExamCreationRequest;
 import com.example.demo.model.ExamDTO;
@@ -25,7 +26,7 @@ public class ExamCreationService {
     var course =
         courseRepository
             .findById(courseId)
-            .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseId));
+            .orElseThrow(() -> new NotFoundException("Course not found: " + courseId));
 
     var existingCoefficientSum = sumCoefficients(courseId);
     if (existingCoefficientSum + request.coefficient()

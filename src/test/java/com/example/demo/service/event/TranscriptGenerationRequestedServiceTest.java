@@ -1,7 +1,9 @@
 package com.example.demo.service.event;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -72,5 +74,39 @@ class TranscriptGenerationRequestedServiceTest {
     var sentEmail = emailCaptor.getValue();
     assertThat(sentEmail.to().getAddress()).isEqualTo("s@hei.school");
     assertThat(sentEmail.attachments()).containsExactly(pdfFile);
+  }
+
+  @Test
+  void aPdfGenerationFailurePropagatesToTriggerThePojaRetryMechanism() {
+    var studentId = UUID.randomUUID();
+    var academicYearId = UUID.randomUUID();
+    var transcript =
+        new TranscriptDTO(studentId, academicYearId, Instant.now(), List.of(), false, 14.0, 60);
+
+    when(transcriptGenerationService.generate(studentId, academicYearId)).thenReturn(transcript);
+    when(transcriptPdfGenerator.generate(transcript))
+        .thenThrow(new RuntimeException("PDF rendering failed"));
+
+    var service =
+        new TranscriptGenerationRequestedService(
+            transcriptGenerationService,
+            transcriptPdfGenerator,
+            bucketComponent,
+            mailer,
+            userRepository);
+
+    var event =
+        TranscriptGenerationRequested.builder()
+            .studentId(studentId)
+            .academicYearId(academicYearId)
+            .build();
+
+    assertThatThrownBy(() -> service.accept(event))
+        .isInstanceOf(RuntimeException.class)
+        .hasMessage("PDF rendering failed");
+
+    verify(bucketComponent, never())
+        .upload(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    verify(mailer, never()).accept(org.mockito.ArgumentMatchers.any());
   }
 }

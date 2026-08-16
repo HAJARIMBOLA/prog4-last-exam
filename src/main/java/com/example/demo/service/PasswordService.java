@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.model.ChangePasswordRequest;
 import com.example.demo.model.ResetPasswordResponse;
 import com.example.demo.repository.UserRepository;
@@ -32,7 +33,7 @@ public class PasswordService {
     var user =
         userRepository
             .findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+            .orElseThrow(() -> new NotFoundException("User not found: " + userId));
     var temporaryPassword = TemporaryPasswordGenerator.generate();
     user.setPasswordHash(passwordEncoder.encode(temporaryPassword));
     userRepository.save(user);

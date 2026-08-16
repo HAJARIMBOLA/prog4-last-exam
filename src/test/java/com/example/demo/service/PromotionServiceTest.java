@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
 class PromotionServiceTest {
@@ -28,5 +30,22 @@ class PromotionServiceTest {
     assertThat(result).hasSize(1);
     assertThat(result.get(0).label()).isEqualTo("P2026");
     assertThat(result.get(0).expectedGraduationYear()).isEqualTo(2029);
+  }
+
+  @Test
+  void listPromotionsPaginatedReportsTheCorrectPageAndTotalCount() {
+    var promotion = new Promotion(UUID.randomUUID(), "P2026", 2029);
+    var pageable = PageRequest.of(1, 2);
+    when(promotionRepository.findAll(pageable))
+        .thenReturn(new PageImpl<>(List.of(promotion), pageable, 5));
+
+    var service = new PromotionService(promotionRepository);
+    var result = service.listPromotions(pageable);
+
+    assertThat(result.content()).hasSize(1);
+    assertThat(result.page()).isEqualTo(1);
+    assertThat(result.size()).isEqualTo(2);
+    assertThat(result.totalElements()).isEqualTo(5);
+    assertThat(result.totalPages()).isEqualTo(3);
   }
 }

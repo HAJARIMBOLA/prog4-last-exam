@@ -5,17 +5,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-import com.example.demo.domain.AcademicYear;
 import com.example.demo.domain.Course;
 import com.example.demo.domain.Promotion;
-import com.example.demo.domain.Role;
 import com.example.demo.domain.StudentEnrollment;
 import com.example.demo.domain.Track;
-import com.example.demo.domain.User;
 import com.example.demo.model.CourseDTO;
 import com.example.demo.repository.CourseRepository;
 import com.example.demo.repository.StudentEnrollmentRepository;
-import java.time.LocalDate;
+import com.example.demo.testdata.AcademicYearTestDataBuilder;
+import com.example.demo.testdata.UserTestDataBuilder;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -127,10 +125,9 @@ class GraduationServiceTest {
 
   private StudentEnrollment enrollmentOf(
       UUID studentId, UUID academicYearId, Track track, boolean repeating) {
-    var student =
-        new User(studentId, "s@hei.school", "hash", Role.STUDENT, "STD001", "Jane", "Doe");
+    var student = UserTestDataBuilder.aStudent().withId(studentId).build();
     var promotion = new Promotion(UUID.randomUUID(), "P2026", 2029);
-    var academicYear = new AcademicYear(academicYearId, LocalDate.now(), LocalDate.now());
+    var academicYear = AcademicYearTestDataBuilder.anAcademicYear().withId(academicYearId).build();
     return new StudentEnrollment(
         UUID.randomUUID(), student, promotion, academicYear, track, repeating);
   }

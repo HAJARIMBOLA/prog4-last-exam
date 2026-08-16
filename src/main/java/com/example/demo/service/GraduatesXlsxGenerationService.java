@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.domain.Track;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.UserRepository;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -44,7 +45,7 @@ public class GraduatesXlsxGenerationService {
             userRepository
                 .findById(entry.studentId())
                 .orElseThrow(
-                    () -> new IllegalArgumentException("Student not found: " + entry.studentId()));
+                    () -> new NotFoundException("Student not found: " + entry.studentId()));
         var row = sheet.createRow(rowIndex++);
         row.createCell(0).setCellValue(entry.rank());
         row.createCell(1).setCellValue(student.getMatriculationNumber());

@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.exception.StudentNotEnrolledException;
 import com.example.demo.mapper.StudentEnrollmentMapper;
 import com.example.demo.model.CourseDTO;
 import com.example.demo.model.StudentEnrollmentDTO;
@@ -26,7 +27,7 @@ public class YearRepetitionService {
             .findByStudentIdAndAcademicYearId(studentId, academicYearId)
             .orElseThrow(
                 () ->
-                    new IllegalArgumentException(
+                    new StudentNotEnrolledException(
                         "No enrollment found for student "
                             + studentId
                             + " in academic year "

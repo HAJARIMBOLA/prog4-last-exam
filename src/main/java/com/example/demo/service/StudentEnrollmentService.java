@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.domain.StudentEnrollment;
 import com.example.demo.domain.Track;
+import com.example.demo.exception.StudentNotEnrolledException;
 import com.example.demo.mapper.StudentEnrollmentMapper;
 import com.example.demo.model.StudentEnrollmentDTO;
 import com.example.demo.repository.StudentEnrollmentRepository;
@@ -28,7 +29,7 @@ public class StudentEnrollmentService {
         .map(StudentEnrollment::getTrackAtTime)
         .orElseThrow(
             () ->
-                new IllegalArgumentException(
+                new StudentNotEnrolledException(
                     "No enrollment found for student "
                         + studentId
                         + " in academic year "

@@ -11,6 +11,7 @@ import com.example.demo.exception.InvalidCoefficientSumException;
 import com.example.demo.model.ExamCreationRequest;
 import com.example.demo.repository.CourseRepository;
 import com.example.demo.repository.ExamRepository;
+import com.example.demo.testdata.CourseTestDataBuilder;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +30,7 @@ class ExamCreationServiceTest {
   @Test
   void completingTheCoefficientSumToExactlyOneIsAccepted() {
     var courseId = UUID.randomUUID();
-    var course = new Course(courseId, "ALG101", "Algorithms", 4);
+    var course = CourseTestDataBuilder.aCourse().withId(courseId).build();
     when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
     when(examRepository.findByCourseId(courseId))
         .thenReturn(List.of(examWith(course, 0.6)))
@@ -46,7 +47,7 @@ class ExamCreationServiceTest {
   @Test
   void leavingTheCoefficientSumBelowOneIsAcceptedButIncomplete() {
     var courseId = UUID.randomUUID();
-    var course = new Course(courseId, "ALG101", "Algorithms", 4);
+    var course = CourseTestDataBuilder.aCourse().withId(courseId).build();
     when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
     when(examRepository.findByCourseId(courseId)).thenReturn(List.of(examWith(course, 0.3)));
     when(examRepository.save(any(Exam.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -60,7 +61,7 @@ class ExamCreationServiceTest {
   @Test
   void exceedingACoefficientSumOfOneIsRejected() {
     var courseId = UUID.randomUUID();
-    var course = new Course(courseId, "ALG101", "Algorithms", 4);
+    var course = CourseTestDataBuilder.aCourse().withId(courseId).build();
     when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
     when(examRepository.findByCourseId(courseId)).thenReturn(List.of(examWith(course, 0.7)));
 

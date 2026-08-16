@@ -1,12 +1,14 @@
 package com.example.demo.endpoint.rest.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.demo.model.CourseDTO;
+import com.example.demo.model.PageResponseDTO;
 import com.example.demo.security.CustomUserDetailsService;
 import com.example.demo.security.JwtService;
 import com.example.demo.service.CourseService;
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = CourseController.class)
@@ -35,16 +38,36 @@ class CourseControllerTest {
   @Test
   void listCoursesReturnsCourseDTOShape() throws Exception {
     var courseId = UUID.randomUUID();
-    when(courseService.listCourses())
-        .thenReturn(List.of(new CourseDTO(courseId, "ALG101", "Algorithms", 4)));
+    when(courseService.listCourses(any()))
+        .thenReturn(
+            new PageResponseDTO<>(
+                List.of(new CourseDTO(courseId, "ALG101", "Algorithms", 4)), 0, 20, 1, 1));
 
     mockMvc
         .perform(get("/courses"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].id").value(courseId.toString()))
-        .andExpect(jsonPath("$[0].ref").value("ALG101"))
-        .andExpect(jsonPath("$[0].title").value("Algorithms"))
-        .andExpect(jsonPath("$[0].credits").value(4));
+        .andExpect(jsonPath("$.content[0].id").value(courseId.toString()))
+        .andExpect(jsonPath("$.content[0].ref").value("ALG101"))
+        .andExpect(jsonPath("$.content[0].title").value("Algorithms"))
+        .andExpect(jsonPath("$.content[0].credits").value(4))
+        .andExpect(jsonPath("$.page").value(0))
+        .andExpect(jsonPath("$.totalElements").value(1));
+  }
+
+  @Test
+  void listCoursesForwardsThePageAndSizeQueryParameters() throws Exception {
+    when(courseService.listCourses(any()))
+        .thenReturn(new PageResponseDTO<>(List.of(), 2, 5, 42, 9));
+
+    mockMvc
+        .perform(get("/courses").param("page", "2").param("size", "5"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.page").value(2))
+        .andExpect(jsonPath("$.size").value(5))
+        .andExpect(jsonPath("$.totalElements").value(42))
+        .andExpect(jsonPath("$.totalPages").value(9));
+
+    verify(courseService).listCourses(PageRequest.of(2, 5));
   }
 
   @Test

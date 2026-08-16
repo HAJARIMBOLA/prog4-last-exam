@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.domain.Exam;
 import com.example.demo.domain.GradeHistory;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.mapper.GradeHistoryMapper;
 import com.example.demo.model.GradeHistoryDTO;
 import com.example.demo.repository.AcademicYearRepository;
@@ -30,16 +31,15 @@ public class GradeSubmissionService {
     var exam =
         examRepository
             .findById(examId)
-            .orElseThrow(() -> new IllegalArgumentException("Exam not found: " + examId));
+            .orElseThrow(() -> new NotFoundException("Exam not found: " + examId));
     var student =
         userRepository
             .findById(studentId)
-            .orElseThrow(() -> new IllegalArgumentException("Student not found: " + studentId));
+            .orElseThrow(() -> new NotFoundException("Student not found: " + studentId));
     var teacher =
         userRepository
             .findByEmail(recordedByEmail)
-            .orElseThrow(
-                () -> new IllegalArgumentException("Teacher not found: " + recordedByEmail));
+            .orElseThrow(() -> new NotFoundException("Teacher not found: " + recordedByEmail));
 
     if (!isTeacherAssignedToExam(teacher.getId(), exam)) {
       throw new AccessDeniedException(
@@ -67,7 +67,7 @@ public class GradeSubmissionService {
                 exam.getDateExam(), exam.getDateExam())
             .orElseThrow(
                 () ->
-                    new IllegalArgumentException(
+                    new NotFoundException(
                         "No academic year found for exam date: " + exam.getDateExam()));
 
     return courseAssignmentRepository
