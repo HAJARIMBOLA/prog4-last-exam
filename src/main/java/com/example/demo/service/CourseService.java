@@ -2,19 +2,21 @@ package com.example.demo.service;
 
 import com.example.demo.domain.CourseAssignment;
 import com.example.demo.domain.CourseTrack;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.mapper.CourseMapper;
 import com.example.demo.model.CourseCreationRequest;
 import com.example.demo.model.CourseDTO;
+import com.example.demo.model.PageResponseDTO;
 import com.example.demo.repository.AcademicYearRepository;
 import com.example.demo.repository.CourseAssignmentRepository;
 import com.example.demo.repository.CourseRepository;
 import com.example.demo.repository.CourseTrackRepository;
 import com.example.demo.repository.SemesterRepository;
 import com.example.demo.repository.UserRepository;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -37,7 +39,7 @@ public class CourseService {
         semesterRepository
             .findById(request.semesterId())
             .orElseThrow(
-                () -> new IllegalArgumentException("Semester not found: " + request.semesterId()));
+                () -> new NotFoundException("Semester not found: " + request.semesterId()));
 
     request
         .tracks()
@@ -57,8 +59,7 @@ public class CourseService {
             .findById(request.academicYearId())
             .orElseThrow(
                 () ->
-                    new IllegalArgumentException(
-                        "Academic year not found: " + request.academicYearId()));
+                    new NotFoundException("Academic year not found: " + request.academicYearId()));
 
     request
         .teacherIds()
@@ -67,8 +68,7 @@ public class CourseService {
               var teacher =
                   userRepository
                       .findById(teacherId)
-                      .orElseThrow(
-                          () -> new IllegalArgumentException("Teacher not found: " + teacherId));
+                      .orElseThrow(() -> new NotFoundException("Teacher not found: " + teacherId));
               var assignment = new CourseAssignment();
               assignment.setCourse(savedCourse);
               assignment.setTeacher(teacher);
@@ -79,8 +79,14 @@ public class CourseService {
     return CourseMapper.toDTO(savedCourse);
   }
 
-  public List<CourseDTO> listCourses() {
-    return courseRepository.findAll().stream().map(CourseMapper::toDTO).toList();
+  public PageResponseDTO<CourseDTO> listCourses(Pageable pageable) {
+    var page = courseRepository.findAll(pageable).map(CourseMapper::toDTO);
+    return new PageResponseDTO<>(
+        page.getContent(),
+        page.getNumber(),
+        page.getSize(),
+        page.getTotalElements(),
+        page.getTotalPages());
   }
 
   public Optional<CourseDTO> findCourse(UUID id) {

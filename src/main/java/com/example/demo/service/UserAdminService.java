@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.domain.Role;
 import com.example.demo.domain.User;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.CreateStudentRequest;
 import com.example.demo.model.CreateTeacherRequest;
@@ -54,7 +55,7 @@ public class UserAdminService {
     var user =
         userRepository
             .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Student not found: " + id));
+            .orElseThrow(() -> new NotFoundException("Student not found: " + id));
     user.setEmail(request.email());
     user.setFirstName(request.firstName());
     user.setLastName(request.lastName());
@@ -66,7 +67,7 @@ public class UserAdminService {
     var user =
         userRepository
             .findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Teacher not found: " + id));
+            .orElseThrow(() -> new NotFoundException("Teacher not found: " + id));
     user.setEmail(request.email());
     user.setFirstName(request.firstName());
     user.setLastName(request.lastName());

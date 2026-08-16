@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Course assignments</title>
+</head>
+<body>
+  <h1>Teacher assignments &mdash; <span th:text="${course.ref}"></span></h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Teacher</th>
+        <th>Academic year</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="assignment : ${assignments}">
+        <td th:text="${assignment.teacherId}"></td>
+        <td th:text="${assignment.academicYearId}"></td>
+        <td>
+          <form
+            method="post"
+            class="update-assignment-form"
+            th:action="@{/ui/courses/{courseId}/assignments/{assignmentId}(courseId=${course.id},assignmentId=${assignment.id})}"
+          >
+            <select name="teacherId">
+              <option
+                th:each="teacher : ${teachers}"
+                th:value="${teacher.id}"
+                th:text="${teacher.firstName} + ' ' + ${teacher.lastName}"
+              ></option>
+            </select>
+            <button type="submit" class="update-assignment-button">Update</button>
+          </form>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Add assignment</h2>
+  <form
+    method="post"
+    class="create-assignment-form"
+    th:action="@{/ui/courses/{courseId}/assignments(courseId=${course.id})}"
+  >
+    <select name="teacherId">
+      <option
+        th:each="teacher : ${teachers}"
+        th:value="${teacher.id}"
+        th:text="${teacher.firstName} + ' ' + ${teacher.lastName}"
+      ></option>
+    </select>
+    <select name="academicYearId">
+      <option
+        th:each="year : ${academicYears}"
+        th:value="${year.id}"
+        th:text="${year.startDate} + ' - ' + ${year.endDate}"
+      ></option>
+    </select>
+    <button type="submit" class="create-assignment-button">Assign</button>
+  </form>
+</body>
+</html>

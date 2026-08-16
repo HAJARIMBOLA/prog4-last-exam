@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.domain.GroupMembership;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.mapper.GroupMembershipMapper;
 import com.example.demo.model.GroupMembershipDTO;
 import com.example.demo.repository.GroupMembershipRepository;
@@ -36,11 +37,11 @@ public class GroupMembershipService {
     var student =
         userRepository
             .findById(studentId)
-            .orElseThrow(() -> new IllegalArgumentException("Student not found: " + studentId));
+            .orElseThrow(() -> new NotFoundException("Student not found: " + studentId));
     var newGroup =
         groupRepository
             .findById(newGroupId)
-            .orElseThrow(() -> new IllegalArgumentException("Group not found: " + newGroupId));
+            .orElseThrow(() -> new NotFoundException("Group not found: " + newGroupId));
 
     groupMembershipRepository
         .findByStudentIdAndDateEndIsNull(studentId)

@@ -2,17 +2,19 @@ package com.example.demo.endpoint.rest.controller;
 
 import com.example.demo.model.CourseCreationRequest;
 import com.example.demo.model.CourseDTO;
+import com.example.demo.model.PageResponseDTO;
 import com.example.demo.service.CourseService;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,8 +29,9 @@ public class CourseController {
   }
 
   @GetMapping("/courses")
-  public ResponseEntity<List<CourseDTO>> listCourses() {
-    return ResponseEntity.ok(courseService.listCourses());
+  public ResponseEntity<PageResponseDTO<CourseDTO>> listCourses(
+      @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
+    return ResponseEntity.ok(courseService.listCourses(PageRequest.of(page, size)));
   }
 
   @GetMapping("/courses/{id}")

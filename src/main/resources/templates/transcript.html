@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Transcript</title>
+</head>
+<body>
+  <h1>Transcript</h1>
+
+  <p th:if="${transcript.provisional}" class="provisional-badge">PROVISIONAL</p>
+  <p th:unless="${transcript.provisional}" class="complete-badge">COMPLETE</p>
+
+  <p>
+    General average:
+    <span
+      th:text="${transcript.generalAverage != null ? transcript.generalAverage : 'N/A'}"
+    ></span>
+  </p>
+  <p>Total credits: <span th:text="${transcript.totalCredits}"></span></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Course</th>
+        <th>Grade</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="line : ${transcript.lines}">
+        <td th:text="${line.courseRef} + ' - ' + ${line.courseTitle}"></td>
+        <td th:text="${line.grade != null ? line.grade : 'N/A'}"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <form
+    method="post"
+    th:action="@{/students/{id}/transcripts/{year}(id=${studentId},year=${academicYearId})}"
+  >
+    <button type="submit" class="request-transcript-button">Request transcript</button>
+  </form>
+</body>
+</html>

@@ -3,10 +3,10 @@ package com.example.demo.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import com.example.demo.domain.Course;
 import com.example.demo.domain.Exam;
 import com.example.demo.model.GradeHistoryDTO;
 import com.example.demo.repository.ExamRepository;
+import com.example.demo.testdata.CourseTestDataBuilder;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -27,7 +27,7 @@ class CourseAverageServiceTest {
   void fullyGradedCourseComputesTheWeightedSum() {
     var studentId = UUID.randomUUID();
     var courseId = UUID.randomUUID();
-    var course = new Course(courseId, "ALG101", "Algorithms", 4);
+    var course = CourseTestDataBuilder.aCourse().withId(courseId).build();
     var exam1 = new Exam(UUID.randomUUID(), LocalDate.now(), 0.6, course);
     var exam2 = new Exam(UUID.randomUUID(), LocalDate.now(), 0.4, course);
     when(examRepository.findByCourseId(courseId)).thenReturn(List.of(exam1, exam2));
@@ -45,7 +45,7 @@ class CourseAverageServiceTest {
   void partiallyGradedCourseOnlyCountsGradedExams() {
     var studentId = UUID.randomUUID();
     var courseId = UUID.randomUUID();
-    var course = new Course(courseId, "ALG101", "Algorithms", 4);
+    var course = CourseTestDataBuilder.aCourse().withId(courseId).build();
     var exam1 = new Exam(UUID.randomUUID(), LocalDate.now(), 0.6, course);
     var exam2 = new Exam(UUID.randomUUID(), LocalDate.now(), 0.4, course);
     when(examRepository.findByCourseId(courseId)).thenReturn(List.of(exam1, exam2));
@@ -62,7 +62,7 @@ class CourseAverageServiceTest {
   void ungradedCourseReturnsEmpty() {
     var studentId = UUID.randomUUID();
     var courseId = UUID.randomUUID();
-    var course = new Course(courseId, "ALG101", "Algorithms", 4);
+    var course = CourseTestDataBuilder.aCourse().withId(courseId).build();
     var exam1 = new Exam(UUID.randomUUID(), LocalDate.now(), 1.0, course);
     when(examRepository.findByCourseId(courseId)).thenReturn(List.of(exam1));
     when(gradeHistoryService.getActiveGrade(studentId, exam1.getId())).thenReturn(Optional.empty());

@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.domain.AcademicYear;
 import com.example.demo.domain.Semester;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.mapper.AcademicYearMapper;
 import com.example.demo.model.AcademicYearDTO;
 import com.example.demo.model.SemesterDTO;
@@ -54,8 +55,7 @@ public class AcademicYearService {
     var academicYear =
         academicYearRepository
             .findById(academicYearId)
-            .orElseThrow(
-                () -> new IllegalArgumentException("Academic year not found: " + academicYearId));
+            .orElseThrow(() -> new NotFoundException("Academic year not found: " + academicYearId));
 
     var existingSemesters = semesterRepository.findByAcademicYearId(academicYearId);
     if (existingSemesters.size() >= REQUIRED_SEMESTER_COUNT) {
