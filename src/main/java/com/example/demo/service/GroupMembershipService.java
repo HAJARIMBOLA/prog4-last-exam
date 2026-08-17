@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
@@ -21,6 +22,7 @@ public class GroupMembershipService {
   private final GroupRepository groupRepository;
   private final UserRepository userRepository;
 
+  @Transactional(readOnly = true)
   public List<GroupMembershipDTO> getGroupsForStudentBetween(
       UUID studentId, LocalDate start, LocalDate end) {
     return groupMembershipRepository.findByStudentIdOrderByDateStartAsc(studentId).stream()
@@ -60,6 +62,7 @@ public class GroupMembershipService {
     return GroupMembershipMapper.toDTO(groupMembershipRepository.save(membership));
   }
 
+  @Transactional(readOnly = true)
   public List<GroupMembershipDTO> getHistory(UUID studentId) {
     return groupMembershipRepository.findByStudentIdOrderByDateStartAsc(studentId).stream()
         .map(GroupMembershipMapper::toDTO)
