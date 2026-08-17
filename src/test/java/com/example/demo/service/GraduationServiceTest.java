@@ -1,16 +1,17 @@
 package com.example.demo.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.example.demo.domain.Course;
+import com.example.demo.domain.CourseTrack;
 import com.example.demo.domain.Promotion;
+import com.example.demo.domain.Semester;
 import com.example.demo.domain.StudentEnrollment;
 import com.example.demo.domain.Track;
 import com.example.demo.model.CourseDTO;
-import com.example.demo.repository.CourseRepository;
+import com.example.demo.repository.CourseTrackRepository;
+import com.example.demo.repository.SemesterRepository;
 import com.example.demo.repository.StudentEnrollmentRepository;
 import com.example.demo.testdata.AcademicYearTestDataBuilder;
 import com.example.demo.testdata.UserTestDataBuilder;
@@ -29,8 +30,8 @@ class GraduationServiceTest {
   @Mock private StrictTrackFilterService strictTrackFilterService;
   @Mock private CourseAverageService courseAverageService;
   @Mock private StudentEnrollmentService studentEnrollmentService;
-  @Mock private CourseRepository courseRepository;
-  @Mock private CourseTrackValidationService courseTrackValidationService;
+  @Mock private SemesterRepository semesterRepository;
+  @Mock private CourseTrackRepository courseTrackRepository;
 
   @Test
   void tenOrAboveInEveryCourseOfEveryYearMakesTheStudentEligible() {
@@ -87,21 +88,24 @@ class GraduationServiceTest {
     var studentId = UUID.randomUUID();
     var commonCoreCourse = new Course(UUID.randomUUID(), "COM101", "Shared Intro", 30);
     var elCourse = new Course(UUID.randomUUID(), "EL101", "EL Specialty", 30);
-    var tnCourse = new Course(UUID.randomUUID(), "TN101", "TN Specialty", 30);
-    when(courseRepository.findAll()).thenReturn(List.of(commonCoreCourse, elCourse, tnCourse));
-    when(courseTrackValidationService.courseMatchesTrack(eq(commonCoreCourse.getId()), any()))
-        .thenAnswer(invocation -> invocation.getArgument(1) == Track.COMMON_CORE);
-    when(courseTrackValidationService.courseMatchesTrack(eq(elCourse.getId()), any()))
-        .thenAnswer(invocation -> invocation.getArgument(1) == Track.EL);
-    when(courseTrackValidationService.courseMatchesTrack(eq(tnCourse.getId()), any()))
-        .thenAnswer(invocation -> invocation.getArgument(1) == Track.TN);
-    var realStrictTrackFilterService =
-        new StrictTrackFilterService(
-            studentEnrollmentService, courseRepository, courseTrackValidationService);
 
     var year1 = UUID.randomUUID();
     var failedYear2Attempt = UUID.randomUUID();
     var retakenYear2 = UUID.randomUUID();
+    var semesterYear1 = semesterOf();
+    var semesterRetakenYear2 = semesterOf();
+    when(semesterRepository.findByAcademicYearId(year1)).thenReturn(List.of(semesterYear1));
+    when(semesterRepository.findByAcademicYearId(retakenYear2))
+        .thenReturn(List.of(semesterRetakenYear2));
+    when(courseTrackRepository.findByTrackAndSemesterId(Track.COMMON_CORE, semesterYear1.getId()))
+        .thenReturn(List.of(courseTrackOf(commonCoreCourse, Track.COMMON_CORE, semesterYear1)));
+    when(courseTrackRepository.findByTrackAndSemesterId(Track.EL, semesterRetakenYear2.getId()))
+        .thenReturn(List.of(courseTrackOf(elCourse, Track.EL, semesterRetakenYear2)));
+
+    var realStrictTrackFilterService =
+        new StrictTrackFilterService(
+            studentEnrollmentService, semesterRepository, courseTrackRepository);
+
     when(studentEnrollmentService.resolveTrack(studentId, year1)).thenReturn(Track.COMMON_CORE);
     when(studentEnrollmentService.resolveTrack(studentId, retakenYear2)).thenReturn(Track.EL);
     when(courseAverageService.computeCourseAverage(studentId, commonCoreCourse.getId()))
@@ -130,5 +134,22 @@ class GraduationServiceTest {
     var academicYear = AcademicYearTestDataBuilder.anAcademicYear().withId(academicYearId).build();
     return new StudentEnrollment(
         UUID.randomUUID(), student, promotion, academicYear, track, repeating);
+  }
+
+  private Semester semesterOf() {
+    var semester = new Semester();
+    semester.setId(UUID.randomUUID());
+    semester.setAcademicYear(AcademicYearTestDataBuilder.anAcademicYear().build());
+    semester.setSemesterNumber(1);
+    return semester;
+  }
+
+  private CourseTrack courseTrackOf(Course course, Track track, Semester semester) {
+    var courseTrack = new CourseTrack();
+    courseTrack.setId(UUID.randomUUID());
+    courseTrack.setCourse(course);
+    courseTrack.setTrack(track);
+    courseTrack.setSemester(semester);
+    return courseTrack;
   }
 }
