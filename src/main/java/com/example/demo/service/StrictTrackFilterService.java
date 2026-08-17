@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
@@ -19,6 +20,7 @@ public class StrictTrackFilterService {
   private final SemesterRepository semesterRepository;
   private final CourseTrackRepository courseTrackRepository;
 
+  @Transactional(readOnly = true)
   public List<CourseDTO> getCoursesForStudentAtYear(UUID studentId, UUID academicYearId) {
     var track = studentEnrollmentService.resolveTrack(studentId, academicYearId);
     var semesterIds =
