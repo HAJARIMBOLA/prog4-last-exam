@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -145,6 +146,59 @@ class JwtAuthenticationFilterTest {
     assertThat(SecurityContextHolder.getContext().getAuthentication())
         .isSameAs(existingAuthentication);
     verify(userDetailsService, never()).loadUserByUsername(org.mockito.ArgumentMatchers.any());
+    verify(filterChain).doFilter(request, response);
+  }
+
+  @Test
+  void requestWithAuthTokenCookieAuthenticatesTheRequest() throws Exception {
+    var filter = new JwtAuthenticationFilter(jwtService, userDetailsService);
+    var request = new MockHttpServletRequest();
+    request.setCookies(new Cookie("auth_token", "valid-token"));
+    var response = new MockHttpServletResponse();
+    var userDetails = userDetailsWith("t@hei.school");
+
+    when(jwtService.extractEmail("valid-token")).thenReturn("t@hei.school");
+    when(userDetailsService.loadUserByUsername("t@hei.school")).thenReturn(userDetails);
+    when(jwtService.isTokenValid("valid-token", userDetails)).thenReturn(true);
+
+    filter.doFilterInternal(request, response, filterChain);
+
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    assertThat(authentication).isInstanceOf(UsernamePasswordAuthenticationToken.class);
+    assertThat(authentication.getPrincipal()).isEqualTo(userDetails);
+    verify(filterChain).doFilter(request, response);
+  }
+
+  @Test
+  void requestWithoutHeaderNorCookieContinuesTheChainWithoutAuthenticating() throws Exception {
+    var filter = new JwtAuthenticationFilter(jwtService, userDetailsService);
+    var request = new MockHttpServletRequest();
+    var response = new MockHttpServletResponse();
+
+    filter.doFilterInternal(request, response, filterChain);
+
+    assertThat(request.getCookies()).isNull();
+    assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    verify(filterChain).doFilter(request, response);
+  }
+
+  @Test
+  void authorizationHeaderTakesPrecedenceOverCookie() throws Exception {
+    var filter = new JwtAuthenticationFilter(jwtService, userDetailsService);
+    var request = new MockHttpServletRequest();
+    request.addHeader("Authorization", "Bearer header-token");
+    request.setCookies(new Cookie("auth_token", "cookie-token"));
+    var response = new MockHttpServletResponse();
+    var userDetails = userDetailsWith("t@hei.school");
+
+    when(jwtService.extractEmail("header-token")).thenReturn("t@hei.school");
+    when(userDetailsService.loadUserByUsername("t@hei.school")).thenReturn(userDetails);
+    when(jwtService.isTokenValid("header-token", userDetails)).thenReturn(true);
+
+    filter.doFilterInternal(request, response, filterChain);
+
+    verify(jwtService).extractEmail("header-token");
+    verify(jwtService, never()).extractEmail("cookie-token");
     verify(filterChain).doFilter(request, response);
   }
 

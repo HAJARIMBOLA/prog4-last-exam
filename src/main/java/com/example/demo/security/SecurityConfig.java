@@ -35,7 +35,8 @@ public class SecurityConfig {
             ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/ping", "/health/**", "/auth/login")
+                auth.requestMatchers(
+                        "/ping", "/health/**", "/auth/login", "/ui/login", "/ui/logout")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
