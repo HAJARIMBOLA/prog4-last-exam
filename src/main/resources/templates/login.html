@@ -4,123 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login</title>
-  <style>
-    :root {
-      --gold: #c9a227;
-      --gold-light: #e0be55;
-      --blue: #0b2e59;
-      --blue-dark: #071f3d;
-      --white: #ffffff;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(160deg, var(--blue-dark) 0%, var(--blue) 55%, var(--gold) 160%);
-      font-family: "Segoe UI", Arial, sans-serif;
-      color: var(--blue-dark);
-    }
-
-    .login-card {
-      background: var(--white);
-      width: 100%;
-      max-width: 380px;
-      margin: 24px;
-      padding: 40px 36px;
-      border-radius: 12px;
-      border-top: 6px solid var(--gold);
-      box-shadow: 0 20px 45px rgba(7, 31, 61, 0.35);
-    }
-
-    .login-logo {
-      display: block;
-      margin: 0 auto 20px;
-      max-width: 140px;
-      height: auto;
-    }
-
-    h1 {
-      margin: 0 0 24px;
-      text-align: center;
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: var(--blue);
-      letter-spacing: 0.03em;
-    }
-
-    .login-error {
-      background: #fdecea;
-      color: #b3261e;
-      border: 1px solid #f2b8b5;
-      border-radius: 6px;
-      padding: 10px 14px;
-      margin: 0 0 18px;
-      font-size: 0.9rem;
-      text-align: center;
-    }
-
-    .login-form label {
-      display: block;
-      margin-bottom: 16px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--blue);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .login-form input[type="email"],
-    .login-form input[type="password"] {
-      display: block;
-      width: 100%;
-      margin-top: 6px;
-      padding: 11px 12px;
-      font-size: 1rem;
-      font-family: inherit;
-      color: var(--blue-dark);
-      background: #f7f8fa;
-      border: 1px solid #d7dbe2;
-      border-radius: 6px;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .login-form input[type="email"]:focus,
-    .login-form input[type="password"]:focus {
-      outline: none;
-      border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.25);
-    }
-
-    .login-form button {
-      width: 100%;
-      margin-top: 8px;
-      padding: 12px;
-      font-size: 1rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      color: var(--blue-dark);
-      background: linear-gradient(135deg, var(--gold-light), var(--gold));
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: filter 0.15s ease, transform 0.05s ease;
-    }
-
-    .login-form button:hover {
-      filter: brightness(1.05);
-    }
-
-    .login-form button:active {
-      transform: translateY(1px);
-    }
-  </style>
+  <link rel="stylesheet" th:href="@{/css/login.css}" />
 </head>
 <body>
   <div class="login-card">
@@ -140,5 +24,6 @@
       <button type="submit">Se connecter</button>
     </form>
   </div>
+  <script th:src="@{/js/login.js}" defer="defer"></script>
 </body>
 </html>

@@ -2,43 +2,54 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Transcript</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}" />
 </head>
 <body>
-  <h1>Transcript</h1>
+  <header class="app-header">
+    <div class="app-header-brand">
+      <img th:src="@{/images/HEI-LOGO.png}" alt="HEI" />
+      <h1>Transcript</h1>
+    </div>
+    <a class="app-header-logout" th:href="@{/ui/logout}">Se déconnecter</a>
+  </header>
+  <main class="app-content">
+    <div class="app-card">
+      <p th:if="${transcript.provisional}" class="provisional-badge">PROVISIONAL</p>
+      <p th:unless="${transcript.provisional}" class="complete-badge">COMPLETE</p>
 
-  <p th:if="${transcript.provisional}" class="provisional-badge">PROVISIONAL</p>
-  <p th:unless="${transcript.provisional}" class="complete-badge">COMPLETE</p>
+      <p>
+        General average:
+        <span
+          th:text="${transcript.generalAverage != null ? transcript.generalAverage : 'N/A'}"
+        ></span>
+      </p>
+      <p>Total credits: <span th:text="${transcript.totalCredits}"></span></p>
 
-  <p>
-    General average:
-    <span
-      th:text="${transcript.generalAverage != null ? transcript.generalAverage : 'N/A'}"
-    ></span>
-  </p>
-  <p>Total credits: <span th:text="${transcript.totalCredits}"></span></p>
+      <table>
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Grade</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="line : ${transcript.lines}">
+            <td th:text="${line.courseRef} + ' - ' + ${line.courseTitle}"></td>
+            <td th:text="${line.grade != null ? line.grade : 'N/A'}"></td>
+          </tr>
+        </tbody>
+      </table>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Course</th>
-        <th>Grade</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr th:each="line : ${transcript.lines}">
-        <td th:text="${line.courseRef} + ' - ' + ${line.courseTitle}"></td>
-        <td th:text="${line.grade != null ? line.grade : 'N/A'}"></td>
-      </tr>
-    </tbody>
-  </table>
-
-  <form
-    method="post"
-    th:action="@{/students/{id}/transcripts/{year}(id=${studentId},year=${academicYearId})}"
-  >
-    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-    <button type="submit" class="request-transcript-button">Request transcript</button>
-  </form>
+      <form
+        method="post"
+        th:action="@{/students/{id}/transcripts/{year}(id=${studentId},year=${academicYearId})}"
+      >
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit" class="request-transcript-button">Request transcript</button>
+      </form>
+    </div>
+  </main>
 </body>
 </html>
