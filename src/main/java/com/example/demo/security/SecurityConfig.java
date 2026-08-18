@@ -47,7 +47,9 @@ public class SecurityConfig {
                         "/auth/login",
                         "/ui/login",
                         "/ui/logout",
-                        "/images/**")
+                        "/images/**",
+                        "/css/**",
+                        "/js/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())

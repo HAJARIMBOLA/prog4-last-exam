@@ -2,36 +2,48 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Promotions</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}" />
 </head>
 <body>
-  <h1>Promotions</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>Label</th>
-        <th>Expected graduation year</th>
-        <th>Graduates list</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr th:each="promotion : ${promotions}">
-        <td th:text="${promotion.label}"></td>
-        <td th:text="${promotion.expectedGraduationYear}"></td>
-        <td>
-          <a
-            class="download-graduates-link"
-            th:href="@{/promotions/{id}/graduates/download(id=${promotion.id},track='EL')}"
-            >Download EL graduates</a
-          >
-          <a
-            class="download-graduates-link"
-            th:href="@{/promotions/{id}/graduates/download(id=${promotion.id},track='TN')}"
-            >Download TN graduates</a
-          >
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <header class="app-header">
+    <div class="app-header-brand">
+      <img th:src="@{/images/HEI-LOGO.png}" alt="HEI" />
+      <h1>Promotions</h1>
+    </div>
+    <a class="app-header-logout" th:href="@{/ui/logout}">Se déconnecter</a>
+  </header>
+  <main class="app-content">
+    <div class="app-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Label</th>
+            <th>Expected graduation year</th>
+            <th>Graduates list</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="promotion : ${promotions}">
+            <td th:text="${promotion.label}"></td>
+            <td th:text="${promotion.expectedGraduationYear}"></td>
+            <td>
+              <a
+                class="download-graduates-link"
+                th:href="@{/promotions/{id}/graduates/download(id=${promotion.id},track='EL')}"
+                >Download EL graduates</a
+              >
+              <a
+                class="download-graduates-link"
+                th:href="@{/promotions/{id}/graduates/download(id=${promotion.id},track='TN')}"
+                >Download TN graduates</a
+              >
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
 </body>
 </html>
