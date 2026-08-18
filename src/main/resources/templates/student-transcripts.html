@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My transcripts</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-header-brand">
+      <img th:src="@{/images/HEI-LOGO.png}" alt="HEI" />
+      <h1>My transcripts</h1>
+    </div>
+    <a class="app-header-logout" th:href="@{/ui/logout}">Se déconnecter</a>
+  </header>
+  <main class="app-content">
+    <div class="app-card">
+      <p th:if="${param.sent != null}" class="complete-badge">
+        Ton relevé complet arrive par email sous peu.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="academicYearId, yearStat : ${academicYearIds}">
+            <td th:text="'Year ' + ${yearStat.count}"></td>
+            <td>
+              <a
+                class="view-year-transcript-link"
+                th:href="@{/ui/students/{id}/transcripts/{year}(id=${studentId},year=${academicYearId})}"
+                >View bulletin</a
+              >
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Full 3-year transcript</h2>
+      <form
+        method="post"
+        th:action="@{/ui/students/{id}/transcripts/full(id=${studentId})}"
+      >
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button type="submit" class="request-full-transcript-button">
+          Télécharger le relevé complet (3 ans)
+        </button>
+      </form>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,13 +1,20 @@
 package com.example.demo.endpoint.web.controller;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.demo.domain.Role;
 import com.example.demo.domain.User;
+import com.example.demo.endpoint.event.EventProducer;
+import com.example.demo.endpoint.event.model.ThreeYearTranscriptGenerationRequested;
 import com.example.demo.model.TranscriptDTO;
 import com.example.demo.model.TranscriptLineDTO;
 import com.example.demo.repository.UserRepository;
@@ -15,6 +22,7 @@ import com.example.demo.security.CustomUserDetailsService;
 import com.example.demo.security.JwtAuthenticationFilter;
 import com.example.demo.security.JwtService;
 import com.example.demo.security.SecurityConfig;
+import com.example.demo.service.ThreeYearTranscriptGenerationService;
 import com.example.demo.service.TranscriptGenerationService;
 import java.time.Instant;
 import java.util.List;
@@ -40,6 +48,10 @@ class StudentTranscriptViewControllerTest {
   @Autowired private MockMvc mockMvc;
 
   @MockBean private TranscriptGenerationService transcriptGenerationService;
+
+  @MockBean private ThreeYearTranscriptGenerationService threeYearTranscriptGenerationService;
+
+  @MockBean private EventProducer<ThreeYearTranscriptGenerationRequested> threeYearEventProducer;
 
   @MockBean private UserRepository userRepository;
 
@@ -102,6 +114,67 @@ class StudentTranscriptViewControllerTest {
         .perform(get("/ui/students/{id}/transcripts/{year}", studentId, academicYearId))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("COMPLETE")));
+  }
+
+  @Test
+  @WithMockUser(username = "s@hei.school", roles = "STUDENT")
+  void studentSeesTheirOwnYearsListWithADownloadButton() throws Exception {
+    var studentId = UUID.randomUUID();
+    var year1 = UUID.randomUUID();
+    var year2 = UUID.randomUUID();
+    when(userRepository.findByEmail("s@hei.school"))
+        .thenReturn(Optional.of(studentWith(studentId, "s@hei.school")));
+    when(threeYearTranscriptGenerationService.resolveOrderedAcademicYearIds(studentId))
+        .thenReturn(List.of(year1, year2));
+
+    mockMvc
+        .perform(get("/ui/students/{id}/transcripts", studentId))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("view-year-transcript-link")))
+        .andExpect(content().string(containsString("request-full-transcript-button")))
+        .andExpect(content().string(containsString(year1.toString())))
+        .andExpect(content().string(containsString(year2.toString())));
+  }
+
+  @Test
+  @WithMockUser(username = "s@hei.school", roles = "STUDENT")
+  void studentCannotListAnotherStudentsYears() throws Exception {
+    var ownId = UUID.randomUUID();
+    var otherStudentId = UUID.randomUUID();
+    when(userRepository.findByEmail("s@hei.school"))
+        .thenReturn(Optional.of(studentWith(ownId, "s@hei.school")));
+
+    mockMvc
+        .perform(get("/ui/students/{id}/transcripts", otherStudentId))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithMockUser(username = "s@hei.school", roles = "STUDENT")
+  void requestingTheirOwnFullTranscriptRedirectsWithAConfirmation() throws Exception {
+    var studentId = UUID.randomUUID();
+    when(userRepository.findByEmail("s@hei.school"))
+        .thenReturn(Optional.of(studentWith(studentId, "s@hei.school")));
+
+    mockMvc
+        .perform(post("/ui/students/{id}/transcripts/full", studentId).with(csrf()))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrl("/ui/students/" + studentId + "/transcripts?sent=true"));
+
+    verify(threeYearEventProducer).accept(any());
+  }
+
+  @Test
+  @WithMockUser(username = "s@hei.school", roles = "STUDENT")
+  void studentCannotRequestAnotherStudentsFullTranscript() throws Exception {
+    var ownId = UUID.randomUUID();
+    var otherStudentId = UUID.randomUUID();
+    when(userRepository.findByEmail("s@hei.school"))
+        .thenReturn(Optional.of(studentWith(ownId, "s@hei.school")));
+
+    mockMvc
+        .perform(post("/ui/students/{id}/transcripts/full", otherStudentId).with(csrf()))
+        .andExpect(status().isForbidden());
   }
 
   private User studentWith(UUID id, String email) {
