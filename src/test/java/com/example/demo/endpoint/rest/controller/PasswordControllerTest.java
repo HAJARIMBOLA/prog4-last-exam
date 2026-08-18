@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -48,7 +49,8 @@ class PasswordControllerTest {
         .perform(
             patch("/users/me/password")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"currentPassword\":\"old\",\"newPassword\":\"newpassword123\"}"))
+                .content("{\"currentPassword\":\"old\",\"newPassword\":\"newpassword123\"}")
+                .with(csrf()))
         .andExpect(status().isNoContent());
   }
 
@@ -63,7 +65,8 @@ class PasswordControllerTest {
         .perform(
             patch("/users/me/password")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"currentPassword\":\"wrong\",\"newPassword\":\"newpassword123\"}"))
+                .content("{\"currentPassword\":\"wrong\",\"newPassword\":\"newpassword123\"}")
+                .with(csrf()))
         .andExpect(status().isUnauthorized());
   }
 
@@ -74,7 +77,7 @@ class PasswordControllerTest {
         .thenReturn(new ResetPasswordResponse("Ab12Cd34Ef56"));
 
     mockMvc
-        .perform(post("/admin/users/{id}/reset-password", UUID.randomUUID()))
+        .perform(post("/admin/users/{id}/reset-password", UUID.randomUUID()).with(csrf()))
         .andExpect(status().isOk());
   }
 
@@ -82,7 +85,7 @@ class PasswordControllerTest {
   @WithMockUser(roles = "STUDENT")
   void resetPasswordAsNonAdminReturnsForbidden() throws Exception {
     mockMvc
-        .perform(post("/admin/users/{id}/reset-password", UUID.randomUUID()))
+        .perform(post("/admin/users/{id}/reset-password", UUID.randomUUID()).with(csrf()))
         .andExpect(status().isForbidden());
   }
 }

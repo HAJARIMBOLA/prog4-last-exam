@@ -3,6 +3,7 @@ package com.example.demo.endpoint.rest.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,7 +53,8 @@ class ExamControllerTest {
         .perform(
             post("/courses/{courseId}/exams", courseId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(EXAM_BODY))
+                .content(EXAM_BODY)
+                .with(csrf()))
         .andExpect(status().isCreated());
   }
 
@@ -63,7 +65,8 @@ class ExamControllerTest {
         .perform(
             post("/courses/{courseId}/exams", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(EXAM_BODY))
+                .content(EXAM_BODY)
+                .with(csrf()))
         .andExpect(status().isForbidden());
   }
 
@@ -74,7 +77,8 @@ class ExamControllerTest {
         .perform(
             post("/courses/{courseId}/exams", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(EXAM_BODY))
+                .content(EXAM_BODY)
+                .with(csrf()))
         .andExpect(status().isForbidden());
   }
 }

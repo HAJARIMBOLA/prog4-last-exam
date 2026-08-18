@@ -3,6 +3,7 @@ package com.example.demo.endpoint.rest.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,7 +49,8 @@ class TranscriptControllerTest {
         .thenReturn(Optional.of(studentWith(studentId, "s@hei.school")));
 
     mockMvc
-        .perform(post("/students/{id}/transcripts/{year}", studentId, UUID.randomUUID()))
+        .perform(
+            post("/students/{id}/transcripts/{year}", studentId, UUID.randomUUID()).with(csrf()))
         .andExpect(status().isAccepted());
 
     verify(eventProducer).accept(any());
@@ -63,7 +65,9 @@ class TranscriptControllerTest {
         .thenReturn(Optional.of(studentWith(ownId, "s@hei.school")));
 
     mockMvc
-        .perform(post("/students/{id}/transcripts/{year}", otherStudentId, UUID.randomUUID()))
+        .perform(
+            post("/students/{id}/transcripts/{year}", otherStudentId, UUID.randomUUID())
+                .with(csrf()))
         .andExpect(status().isForbidden());
   }
 
@@ -71,7 +75,9 @@ class TranscriptControllerTest {
   @WithMockUser(username = "admin@hei.school", roles = "ADMIN")
   void adminCanRequestAnyStudentsTranscript() throws Exception {
     mockMvc
-        .perform(post("/students/{id}/transcripts/{year}", UUID.randomUUID(), UUID.randomUUID()))
+        .perform(
+            post("/students/{id}/transcripts/{year}", UUID.randomUUID(), UUID.randomUUID())
+                .with(csrf()))
         .andExpect(status().isAccepted());
 
     verify(eventProducer).accept(any());

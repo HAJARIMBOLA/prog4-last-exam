@@ -1,6 +1,7 @@
 package com.example.demo.endpoint.rest.controller;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,7 +45,7 @@ class AcademicYearClosingControllerTest {
         .thenReturn(List.of(UUID.randomUUID(), UUID.randomUUID()));
 
     mockMvc
-        .perform(post("/academic-years/{id}/close", academicYearId))
+        .perform(post("/academic-years/{id}/close", academicYearId).with(csrf()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.studentsProcessed").value(2));
   }
@@ -53,7 +54,7 @@ class AcademicYearClosingControllerTest {
   @WithMockUser(roles = "TEACHER")
   void teacherCannotCloseAnAcademicYear() throws Exception {
     mockMvc
-        .perform(post("/academic-years/{id}/close", UUID.randomUUID()))
+        .perform(post("/academic-years/{id}/close", UUID.randomUUID()).with(csrf()))
         .andExpect(status().isForbidden());
   }
 
@@ -61,7 +62,7 @@ class AcademicYearClosingControllerTest {
   @WithMockUser(roles = "STUDENT")
   void studentCannotCloseAnAcademicYear() throws Exception {
     mockMvc
-        .perform(post("/academic-years/{id}/close", UUID.randomUUID()))
+        .perform(post("/academic-years/{id}/close", UUID.randomUUID()).with(csrf()))
         .andExpect(status().isForbidden());
   }
 }
