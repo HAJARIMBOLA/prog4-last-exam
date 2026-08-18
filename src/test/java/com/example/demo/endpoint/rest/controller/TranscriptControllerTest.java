@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.demo.domain.Role;
 import com.example.demo.domain.User;
 import com.example.demo.endpoint.event.EventProducer;
+import com.example.demo.endpoint.event.model.ThreeYearTranscriptGenerationRequested;
 import com.example.demo.endpoint.event.model.TranscriptGenerationRequested;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.CustomUserDetailsService;
@@ -38,6 +39,8 @@ class TranscriptControllerTest {
   @Autowired private MockMvc mockMvc;
 
   @MockBean private EventProducer<TranscriptGenerationRequested> eventProducer;
+
+  @MockBean private EventProducer<ThreeYearTranscriptGenerationRequested> threeYearEventProducer;
 
   @MockBean private UserRepository userRepository;
 
@@ -81,6 +84,43 @@ class TranscriptControllerTest {
         .andExpect(status().isAccepted());
 
     verify(eventProducer).accept(any());
+  }
+
+  @Test
+  @WithMockUser(username = "s@hei.school", roles = "STUDENT")
+  void studentCanRequestTheirOwnFullTranscript() throws Exception {
+    var studentId = UUID.randomUUID();
+    when(userRepository.findByEmail("s@hei.school"))
+        .thenReturn(Optional.of(studentWith(studentId, "s@hei.school")));
+
+    mockMvc
+        .perform(post("/students/{id}/transcripts/full", studentId).with(csrf()))
+        .andExpect(status().isAccepted());
+
+    verify(threeYearEventProducer).accept(any());
+  }
+
+  @Test
+  @WithMockUser(username = "s@hei.school", roles = "STUDENT")
+  void studentCannotRequestAnotherStudentsFullTranscript() throws Exception {
+    var ownId = UUID.randomUUID();
+    var otherStudentId = UUID.randomUUID();
+    when(userRepository.findByEmail("s@hei.school"))
+        .thenReturn(Optional.of(studentWith(ownId, "s@hei.school")));
+
+    mockMvc
+        .perform(post("/students/{id}/transcripts/full", otherStudentId).with(csrf()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @WithMockUser(username = "admin@hei.school", roles = "ADMIN")
+  void adminCanRequestAnyStudentsFullTranscript() throws Exception {
+    mockMvc
+        .perform(post("/students/{id}/transcripts/full", UUID.randomUUID()).with(csrf()))
+        .andExpect(status().isAccepted());
+
+    verify(threeYearEventProducer).accept(any());
   }
 
   private User studentWith(UUID id, String email) {

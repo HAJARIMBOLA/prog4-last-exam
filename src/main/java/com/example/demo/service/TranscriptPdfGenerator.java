@@ -22,30 +22,33 @@ public class TranscriptPdfGenerator {
       var document = new Document();
       PdfWriter.getInstance(document, outputStream);
       document.open();
-
-      document.add(new Paragraph("Transcript"));
-      document.add(
-          new Paragraph("Status: " + (transcript.provisional() ? "PROVISIONAL" : "COMPLETE")));
-      document.add(
-          new Paragraph(
-              "General average: "
-                  + (transcript.generalAverage() == null ? "N/A" : transcript.generalAverage())));
-      document.add(new Paragraph("Total credits: " + transcript.totalCredits()));
-      document.add(new Paragraph(" "));
-
-      for (var line : transcript.lines()) {
-        document.add(
-            new Paragraph(
-                line.courseRef()
-                    + " - "
-                    + line.courseTitle()
-                    + ": "
-                    + (line.grade() == null ? "N/A" : line.grade())));
-      }
-
+      writeYearSection(document, transcript, "Transcript");
       document.close();
     }
 
     return file;
+  }
+
+  @SneakyThrows
+  void writeYearSection(Document document, TranscriptDTO transcript, String heading) {
+    document.add(new Paragraph(heading));
+    document.add(
+        new Paragraph("Status: " + (transcript.provisional() ? "PROVISIONAL" : "COMPLETE")));
+    document.add(
+        new Paragraph(
+            "General average: "
+                + (transcript.generalAverage() == null ? "N/A" : transcript.generalAverage())));
+    document.add(new Paragraph("Total credits: " + transcript.totalCredits()));
+    document.add(new Paragraph(" "));
+
+    for (var line : transcript.lines()) {
+      document.add(
+          new Paragraph(
+              line.courseRef()
+                  + " - "
+                  + line.courseTitle()
+                  + ": "
+                  + (line.grade() == null ? "N/A" : line.grade())));
+    }
   }
 }
