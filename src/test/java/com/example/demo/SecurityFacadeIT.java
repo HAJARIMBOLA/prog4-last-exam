@@ -29,8 +29,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.LinkedMultiValueMap;
 
 class SecurityFacadeIT extends FacadeIT {
 
@@ -174,6 +176,32 @@ class SecurityFacadeIT extends FacadeIT {
             String.class);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+  }
+
+  @Test
+  void loginPageIsAccessibleWithoutToken() {
+    var response = restTemplate.getForEntity(url("/ui/login"), String.class);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+  }
+
+  @Test
+  void postingValidCredentialsToWebLoginSetsAuthTokenCookieAndRedirects() {
+    saveUser("i2.web-login@hei.school", Role.STUDENT, "STD920099");
+
+    var headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    var form = new LinkedMultiValueMap<String, String>();
+    form.add("email", "i2.web-login@hei.school");
+    form.add("password", "Password123!");
+
+    var response =
+        restTemplate.exchange(
+            url("/ui/login"), HttpMethod.POST, new HttpEntity<>(form, headers), String.class);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FOUND);
+    assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE))
+        .anyMatch(c -> c.startsWith("auth_token="));
   }
 
   private Course saveCourse(String ref, String title) {
