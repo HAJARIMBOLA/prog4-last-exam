@@ -3,6 +3,7 @@ package com.example.demo.endpoint.web.controller;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -96,7 +97,8 @@ class CourseAssignmentViewControllerTest {
         .perform(
             post("/ui/courses/{courseId}/assignments", courseId)
                 .param("teacherId", teacherId.toString())
-                .param("academicYearId", academicYearId.toString()))
+                .param("academicYearId", academicYearId.toString())
+                .with(csrf()))
         .andExpect(status().is3xxRedirection())
         .andExpect(redirectedUrl("/ui/courses/" + courseId + "/assignments"));
 
@@ -113,7 +115,8 @@ class CourseAssignmentViewControllerTest {
     mockMvc
         .perform(
             post("/ui/courses/{courseId}/assignments/{assignmentId}", courseId, assignmentId)
-                .param("teacherId", newTeacherId.toString()))
+                .param("teacherId", newTeacherId.toString())
+                .with(csrf()))
         .andExpect(status().is3xxRedirection())
         .andExpect(redirectedUrl("/ui/courses/" + courseId + "/assignments"));
 

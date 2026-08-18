@@ -2,6 +2,7 @@ package com.example.demo.endpoint.rest.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -57,7 +58,10 @@ class AdminUserControllerTest {
 
     mockMvc
         .perform(
-            post("/admin/students").contentType(MediaType.APPLICATION_JSON).content(STUDENT_BODY))
+            post("/admin/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(STUDENT_BODY)
+                .with(csrf()))
         .andExpect(status().isCreated());
   }
 
@@ -72,7 +76,8 @@ class AdminUserControllerTest {
         .perform(
             put("/admin/students/{id}", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(STUDENT_BODY))
+                .content(STUDENT_BODY)
+                .with(csrf()))
         .andExpect(status().isOk());
   }
 
@@ -87,7 +92,10 @@ class AdminUserControllerTest {
 
     mockMvc
         .perform(
-            post("/admin/teachers").contentType(MediaType.APPLICATION_JSON).content(TEACHER_BODY))
+            post("/admin/teachers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TEACHER_BODY)
+                .with(csrf()))
         .andExpect(status().isCreated());
   }
 
@@ -102,7 +110,8 @@ class AdminUserControllerTest {
         .perform(
             put("/admin/teachers/{id}", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TEACHER_BODY))
+                .content(TEACHER_BODY)
+                .with(csrf()))
         .andExpect(status().isOk());
   }
 
@@ -111,7 +120,10 @@ class AdminUserControllerTest {
   void studentCannotCreateStudent() throws Exception {
     mockMvc
         .perform(
-            post("/admin/students").contentType(MediaType.APPLICATION_JSON).content(STUDENT_BODY))
+            post("/admin/students")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(STUDENT_BODY)
+                .with(csrf()))
         .andExpect(status().isForbidden());
   }
 
@@ -122,7 +134,8 @@ class AdminUserControllerTest {
         .perform(
             put("/admin/students/{id}", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(STUDENT_BODY))
+                .content(STUDENT_BODY)
+                .with(csrf()))
         .andExpect(status().isForbidden());
   }
 
@@ -131,7 +144,10 @@ class AdminUserControllerTest {
   void studentCannotCreateTeacher() throws Exception {
     mockMvc
         .perform(
-            post("/admin/teachers").contentType(MediaType.APPLICATION_JSON).content(TEACHER_BODY))
+            post("/admin/teachers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(TEACHER_BODY)
+                .with(csrf()))
         .andExpect(status().isForbidden());
   }
 
@@ -142,7 +158,8 @@ class AdminUserControllerTest {
         .perform(
             put("/admin/teachers/{id}", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TEACHER_BODY))
+                .content(TEACHER_BODY)
+                .with(csrf()))
         .andExpect(status().isForbidden());
   }
 }

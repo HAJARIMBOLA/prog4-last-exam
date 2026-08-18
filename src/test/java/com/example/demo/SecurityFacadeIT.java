@@ -189,11 +189,16 @@ class SecurityFacadeIT extends FacadeIT {
   void postingValidCredentialsToWebLoginSetsAuthTokenCookieAndRedirects() {
     saveUser("i2.web-login@hei.school", Role.STUDENT, "STD920099");
 
+    var loginPageResponse = restTemplate.getForEntity(url("/ui/login"), String.class);
+    var csrfToken = extractCookie(loginPageResponse.getHeaders(), "XSRF-TOKEN");
+
     var headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    headers.add(HttpHeaders.COOKIE, "XSRF-TOKEN=" + csrfToken);
     var form = new LinkedMultiValueMap<String, String>();
     form.add("email", "i2.web-login@hei.school");
     form.add("password", "Password123!");
+    form.add("_csrf", csrfToken);
 
     var response =
         restTemplate.exchange(
@@ -202,6 +207,14 @@ class SecurityFacadeIT extends FacadeIT {
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FOUND);
     assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE))
         .anyMatch(c -> c.startsWith("auth_token="));
+  }
+
+  private String extractCookie(HttpHeaders headers, String cookieName) {
+    return headers.get(HttpHeaders.SET_COOKIE).stream()
+        .filter(c -> c.startsWith(cookieName + "="))
+        .map(c -> c.substring((cookieName + "=").length()).split(";", 2)[0])
+        .findFirst()
+        .orElseThrow();
   }
 
   private Course saveCourse(String ref, String title) {

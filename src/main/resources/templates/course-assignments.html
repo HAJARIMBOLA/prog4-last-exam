@@ -25,6 +25,7 @@
             class="update-assignment-form"
             th:action="@{/ui/courses/{courseId}/assignments/{assignmentId}(courseId=${course.id},assignmentId=${assignment.id})}"
           >
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <select name="teacherId">
               <option
                 th:each="teacher : ${teachers}"
@@ -45,6 +46,7 @@
     class="create-assignment-form"
     th:action="@{/ui/courses/{courseId}/assignments(courseId=${course.id})}"
   >
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
     <select name="teacherId">
       <option
         th:each="teacher : ${teachers}"

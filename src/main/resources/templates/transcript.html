@@ -37,6 +37,7 @@
     method="post"
     th:action="@{/students/{id}/transcripts/{year}(id=${studentId},year=${academicYearId})}"
   >
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
     <button type="submit" class="request-transcript-button">Request transcript</button>
   </form>
 </body>

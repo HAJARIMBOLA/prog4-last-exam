@@ -2,6 +2,7 @@ package com.example.demo.endpoint.rest.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -62,7 +63,8 @@ class GlobalExceptionHandlerTest {
         .perform(
             post("/courses/{courseId}/exams", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(EXAM_BODY))
+                .content(EXAM_BODY)
+                .with(csrf()))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.status").value(404))
         .andExpect(jsonPath("$.detail").value("Course not found: nope"));
@@ -75,7 +77,7 @@ class GlobalExceptionHandlerTest {
         .thenThrow(new StudentNotEnrolledException("No enrollment found for student x"));
 
     mockMvc
-        .perform(post("/academic-years/{id}/close", UUID.randomUUID()))
+        .perform(post("/academic-years/{id}/close", UUID.randomUUID()).with(csrf()))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.detail").value("No enrollment found for student x"));
   }
@@ -90,7 +92,8 @@ class GlobalExceptionHandlerTest {
         .perform(
             post("/courses/{courseId}/exams", UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(EXAM_BODY))
+                .content(EXAM_BODY)
+                .with(csrf()))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.status").value(409))
         .andExpect(jsonPath("$.detail").value("would exceed 1.0"));
@@ -106,7 +109,8 @@ class GlobalExceptionHandlerTest {
         .perform(
             post("/courses")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(validCourseCreationBody()))
+                .content(validCourseCreationBody())
+                .with(csrf()))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail").value("exceeds 30 credits"));
   }
@@ -120,7 +124,8 @@ class GlobalExceptionHandlerTest {
         .perform(
             post("/courses")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(validCourseCreationBody()))
+                .content(validCourseCreationBody())
+                .with(csrf()))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.detail").value("bad input"));
   }
@@ -140,7 +145,8 @@ class GlobalExceptionHandlerTest {
                         + UUID.randomUUID()
                         + "\",\"tracks\":[\"EL\"],\"teacherIds\":[\""
                         + UUID.randomUUID()
-                        + "\"]}"))
+                        + "\"]}")
+                .with(csrf()))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value("Validation failed"))
         .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("ref")));
