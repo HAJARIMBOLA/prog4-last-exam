@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Graduates</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-header-brand">
+      <img th:src="@{/images/HEI-LOGO.png}" alt="HEI" />
+      <h1 th:text="'Graduates — ' + ${promotion.label}"></h1>
+    </div>
+    <a class="app-header-logout" th:href="@{/ui/logout}">Se déconnecter</a>
+  </header>
+  <main class="app-content app-content-wide">
+    <div class="app-card">
+      <a class="back-link" th:href="@{/ui/promotions}">&larr; Back to promotions</a>
+
+      <div class="track-columns">
+        <section class="track-column">
+          <h2><span class="track-badge track-badge-el">EL</span> Graduates</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>STD</th>
+                <th>Name</th>
+                <th>Average</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="graduate : ${elGraduates}">
+                <td th:text="${graduate.rank}"></td>
+                <td th:text="${graduate.matriculationNumber}"></td>
+                <td th:text="${graduate.firstName} + ' ' + ${graduate.lastName}"></td>
+                <td th:text="${graduate.average}"></td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(elGraduates)}">
+                <td colspan="4" class="empty-row">No EL graduates yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="track-column">
+          <h2><span class="track-badge track-badge-tn">TN</span> Graduates</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>STD</th>
+                <th>Name</th>
+                <th>Average</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="graduate : ${tnGraduates}">
+                <td th:text="${graduate.rank}"></td>
+                <td th:text="${graduate.matriculationNumber}"></td>
+                <td th:text="${graduate.firstName} + ' ' + ${graduate.lastName}"></td>
+                <td th:text="${graduate.average}"></td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(tnGraduates)}">
+                <td colspan="4" class="empty-row">No TN graduates yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+
+      <div class="download-row">
+        <a
+          class="download-graduates-link"
+          th:href="@{/promotions/{id}/graduates/download(id=${promotion.id},track='EL')}"
+          >Download EL graduates (XLSX)</a
+        >
+        <a
+          class="download-graduates-link"
+          th:href="@{/promotions/{id}/graduates/download(id=${promotion.id},track='TN')}"
+          >Download TN graduates (XLSX)</a
+        >
+      </div>
+    </div>
+  </main>
+</body>
+</html>

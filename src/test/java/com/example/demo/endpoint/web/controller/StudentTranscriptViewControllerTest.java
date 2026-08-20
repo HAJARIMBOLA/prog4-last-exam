@@ -124,6 +124,8 @@ class StudentTranscriptViewControllerTest {
     var year2 = UUID.randomUUID();
     when(userRepository.findByEmail("s@hei.school"))
         .thenReturn(Optional.of(studentWith(studentId, "s@hei.school")));
+    when(userRepository.findById(studentId))
+        .thenReturn(Optional.of(studentWith(studentId, "s@hei.school")));
     when(threeYearTranscriptGenerationService.resolveOrderedAcademicYearIds(studentId))
         .thenReturn(List.of(year1, year2));
 
@@ -133,7 +135,9 @@ class StudentTranscriptViewControllerTest {
         .andExpect(content().string(containsString("view-year-transcript-link")))
         .andExpect(content().string(containsString("request-full-transcript-button")))
         .andExpect(content().string(containsString(year1.toString())))
-        .andExpect(content().string(containsString(year2.toString())));
+        .andExpect(content().string(containsString(year2.toString())))
+        .andExpect(content().string(containsString("Jane Doe")))
+        .andExpect(content().string(containsString("STD001")));
   }
 
   @Test

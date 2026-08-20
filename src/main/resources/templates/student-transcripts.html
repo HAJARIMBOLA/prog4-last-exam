@@ -16,6 +16,11 @@
   </header>
   <main class="app-content">
     <div class="app-card">
+      <div class="student-header">
+        <h2 th:text="${studentName}"></h2>
+        <p class="student-std">STD <span th:text="${matriculationNumber}"></span></p>
+      </div>
+
       <p th:if="${param.sent != null}" class="complete-badge">
         Ton relevé complet arrive par email sous peu.
       </p>

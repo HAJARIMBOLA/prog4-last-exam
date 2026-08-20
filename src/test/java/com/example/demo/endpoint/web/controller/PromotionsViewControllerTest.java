@@ -53,6 +53,8 @@ class PromotionsViewControllerTest {
             content()
                 .string(
                     containsString("/promotions/" + promotionId + "/graduates/download?track=EL")))
-        .andExpect(content().string(containsString("download-graduates-link")));
+        .andExpect(content().string(containsString("download-graduates-link")))
+        .andExpect(content().string(containsString("/ui/promotions/" + promotionId + "/graduates")))
+        .andExpect(content().string(containsString("view-graduates-link")));
   }
 }

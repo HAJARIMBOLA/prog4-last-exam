@@ -1,6 +1,8 @@
 package com.example.demo.endpoint.web.controller;
 
+import com.example.demo.domain.Role;
 import com.example.demo.model.LoginRequest;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,11 +18,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class WebAuthController {
 
   private final AuthService authService;
+  private final UserRepository userRepository;
   private final long jwtExpirationMs;
 
   public WebAuthController(
-      AuthService authService, @Value("${jwt.expiration-ms}") long jwtExpirationMs) {
+      AuthService authService,
+      UserRepository userRepository,
+      @Value("${jwt.expiration-ms}") long jwtExpirationMs) {
     this.authService = authService;
+    this.userRepository = userRepository;
     this.jwtExpirationMs = jwtExpirationMs;
   }
 
@@ -42,6 +48,11 @@ public class WebAuthController {
       cookie.setPath("/");
       cookie.setMaxAge((int) (jwtExpirationMs / 1000));
       response.addCookie(cookie);
+
+      var user = userRepository.findByEmail(email).orElseThrow();
+      if (user.getRole() == Role.STUDENT) {
+        return "redirect:/ui/students/" + user.getId() + "/transcripts";
+      }
       return "redirect:/ui/promotions";
     } catch (BadCredentialsException e) {
       model.addAttribute("error", "Email ou mot de passe invalide");

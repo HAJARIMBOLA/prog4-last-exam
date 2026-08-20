@@ -30,6 +30,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.LinkedMultiValueMap;
@@ -186,9 +187,29 @@ class SecurityFacadeIT extends FacadeIT {
   }
 
   @Test
-  void postingValidCredentialsToWebLoginSetsAuthTokenCookieAndRedirects() {
-    saveUser("i2.web-login@hei.school", Role.STUDENT, "STD920099");
+  void postingValidCredentialsToWebLoginSetsAuthTokenCookieAndRedirectsAStudentToTheirTranscripts() {
+    var student = saveUser("i2.web-login@hei.school", Role.STUDENT, "STD920099");
 
+    var response = webLogin("i2.web-login@hei.school");
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FOUND);
+    assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE))
+        .anyMatch(c -> c.startsWith("auth_token="));
+    assertThat(response.getHeaders().getLocation().toString())
+        .isEqualTo("/ui/students/" + student.getId() + "/transcripts");
+  }
+
+  @Test
+  void postingValidCredentialsToWebLoginRedirectsAnAdminToPromotions() {
+    saveUser("i2.web-login-admin@hei.school", Role.ADMIN, null);
+
+    var response = webLogin("i2.web-login-admin@hei.school");
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FOUND);
+    assertThat(response.getHeaders().getLocation().toString()).isEqualTo("/ui/promotions");
+  }
+
+  private ResponseEntity<String> webLogin(String email) {
     var loginPageResponse = restTemplate.getForEntity(url("/ui/login"), String.class);
     var csrfToken = extractCookie(loginPageResponse.getHeaders(), "XSRF-TOKEN");
 
@@ -196,17 +217,12 @@ class SecurityFacadeIT extends FacadeIT {
     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
     headers.add(HttpHeaders.COOKIE, "XSRF-TOKEN=" + csrfToken);
     var form = new LinkedMultiValueMap<String, String>();
-    form.add("email", "i2.web-login@hei.school");
+    form.add("email", email);
     form.add("password", "Password123!");
     form.add("_csrf", csrfToken);
 
-    var response =
-        restTemplate.exchange(
-            url("/ui/login"), HttpMethod.POST, new HttpEntity<>(form, headers), String.class);
-
-    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FOUND);
-    assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE))
-        .anyMatch(c -> c.startsWith("auth_token="));
+    return restTemplate.exchange(
+        url("/ui/login"), HttpMethod.POST, new HttpEntity<>(form, headers), String.class);
   }
 
   private String extractCookie(HttpHeaders headers, String cookieName) {

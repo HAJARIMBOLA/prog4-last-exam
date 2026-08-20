@@ -30,6 +30,11 @@
             <td th:text="${promotion.expectedGraduationYear}"></td>
             <td>
               <a
+                class="view-graduates-link"
+                th:href="@{/ui/promotions/{id}/graduates(id=${promotion.id})}"
+                >View graduates</a
+              >
+              <a
                 class="download-graduates-link"
                 th:href="@{/promotions/{id}/graduates/download(id=${promotion.id},track='EL')}"
                 >Download EL graduates</a
