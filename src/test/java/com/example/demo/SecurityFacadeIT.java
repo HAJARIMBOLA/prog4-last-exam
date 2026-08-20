@@ -187,7 +187,8 @@ class SecurityFacadeIT extends FacadeIT {
   }
 
   @Test
-  void postingValidCredentialsToWebLoginSetsAuthTokenCookieAndRedirectsAStudentToTheirTranscripts() {
+  void
+      postingValidCredentialsToWebLoginSetsAuthTokenCookieAndRedirectsAStudentToTheirTranscripts() {
     var student = saveUser("i2.web-login@hei.school", Role.STUDENT, "STD920099");
 
     var response = webLogin("i2.web-login@hei.school");
@@ -195,7 +196,7 @@ class SecurityFacadeIT extends FacadeIT {
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FOUND);
     assertThat(response.getHeaders().get(HttpHeaders.SET_COOKIE))
         .anyMatch(c -> c.startsWith("auth_token="));
-    assertThat(response.getHeaders().getLocation().toString())
+    assertThat(response.getHeaders().getLocation().getPath())
         .isEqualTo("/ui/students/" + student.getId() + "/transcripts");
   }
 
@@ -206,7 +207,7 @@ class SecurityFacadeIT extends FacadeIT {
     var response = webLogin("i2.web-login-admin@hei.school");
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FOUND);
-    assertThat(response.getHeaders().getLocation().toString()).isEqualTo("/ui/promotions");
+    assertThat(response.getHeaders().getLocation().getPath()).isEqualTo("/ui/promotions");
   }
 
   private ResponseEntity<String> webLogin(String email) {
