@@ -2,6 +2,7 @@ package com.example.demo.endpoint.web.controller;
 
 import com.example.demo.endpoint.event.EventProducer;
 import com.example.demo.endpoint.event.model.ThreeYearTranscriptGenerationRequested;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.ThreeYearTranscriptGenerationService;
 import com.example.demo.service.TranscriptGenerationService;
@@ -45,7 +46,14 @@ public class StudentTranscriptViewController {
   public String listTranscripts(@PathVariable UUID id, Authentication authentication, Model model) {
     requireSelfOrNonStudent(id, authentication);
 
+    var student =
+        userRepository
+            .findById(id)
+            .orElseThrow(() -> new NotFoundException("Student not found: " + id));
+
     model.addAttribute("studentId", id);
+    model.addAttribute("studentName", student.getFirstName() + " " + student.getLastName());
+    model.addAttribute("matriculationNumber", student.getMatriculationNumber());
     model.addAttribute(
         "academicYearIds", threeYearTranscriptGenerationService.resolveOrderedAcademicYearIds(id));
     return "student-transcripts";

@@ -187,3 +187,114 @@ button:active {
   color: #1b7a45;
   border: 1px solid #a9dfc0;
 }
+
+/* Wider layout for pages with side-by-side content (e.g. EL/TN graduates) */
+.app-content-wide {
+  max-width: 1180px;
+}
+
+/* Student dashboard header (name + matriculation number) */
+.student-header {
+  padding-bottom: 18px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e5e8ee;
+}
+
+.student-header h2 {
+  margin: 0 0 4px;
+  color: var(--blue);
+  font-size: 1.35rem;
+}
+
+.student-std {
+  margin: 0;
+  color: #5c6779;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* Back link used on drill-down pages */
+a.back-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: var(--blue);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a.back-link:hover {
+  color: var(--gold);
+}
+
+/* Side-by-side EL / TN graduates columns */
+.track-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+@media (max-width: 780px) {
+  .track-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.track-column h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.track-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: var(--white);
+}
+
+.track-badge-el {
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+}
+
+.track-badge-tn {
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  color: var(--blue-dark);
+}
+
+.empty-row {
+  text-align: center;
+  color: #9aa3b2;
+  font-style: italic;
+}
+
+/* View-graduates link (in-app, distinct from the XLSX download links) */
+a.view-graduates-link {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: var(--blue);
+  color: var(--white);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: filter 0.15s ease;
+}
+
+a.view-graduates-link:hover {
+  filter: brightness(1.2);
+}
+
+.download-row {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e8ee;
+}
