@@ -126,11 +126,18 @@ a.download-graduates-link {
   font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
-  transition: filter 0.15s ease;
+  box-shadow: 0 3px 8px rgba(201, 162, 39, 0.3);
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 a.download-graduates-link:hover {
   filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px rgba(201, 162, 39, 0.4);
+}
+
+a.download-graduates-link:active {
+  transform: translateY(1px);
 }
 
 select {
@@ -145,23 +152,50 @@ select {
 }
 
 button {
-  padding: 8px 18px;
+  padding: 10px 20px;
   font-size: 0.9rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--blue-dark);
   background: linear-gradient(135deg, var(--gold-light), var(--gold));
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(201, 162, 39, 0.35);
   cursor: pointer;
-  transition: filter 0.15s ease, transform 0.05s ease;
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 button:hover {
   filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(201, 162, 39, 0.45);
 }
 
 button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(201, 162, 39, 0.35);
+}
+
+a.view-year-transcript-link {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: var(--blue);
+  color: var(--white);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 3px 8px rgba(11, 46, 89, 0.25);
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+a.view-year-transcript-link:hover {
+  filter: brightness(1.25);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px rgba(11, 46, 89, 0.35);
+}
+
+a.view-year-transcript-link:active {
   transform: translateY(1px);
 }
 
@@ -286,11 +320,18 @@ a.view-graduates-link {
   font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
-  transition: filter 0.15s ease;
+  box-shadow: 0 3px 8px rgba(11, 46, 89, 0.25);
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 a.view-graduates-link:hover {
   filter: brightness(1.2);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px rgba(11, 46, 89, 0.35);
+}
+
+a.view-graduates-link:active {
+  transform: translateY(1px);
 }
 
 .download-row {
