@@ -33,7 +33,9 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.csrf(
             csrf ->
-                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                csrf.csrfTokenRepository(
+                        new StatelessCsrfTokenRepository(
+                            CookieCsrfTokenRepository.withHttpOnlyFalse()))
                     .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
                     .ignoringRequestMatchers("/auth/login")
                     .ignoringRequestMatchers(request -> request.getHeader("Authorization") != null))
